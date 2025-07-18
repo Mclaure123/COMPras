@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Zero :: Functional Completion v23.0 FINAL</title>
+    <title>Protocol Zero :: Final Polish v28.0 FINAL</title>
     <style>
         :root {
-            --bg-color: #A9D6E5;
-            --panel-bg-color: #FFF8E1;
-            --primary-text-color: #01579B;
-            --secondary-text-color: #455A64;
-            --accent-color: #FF7043;
-            --border-color: #4F3A2A;
-            --shadow-color: rgba(79, 58, 42, 0.4);
-            --disabled-color: #BDBDBD;
+            --bg-color: #1A202C;
+            --panel-bg-color: #2D3748;
+            --primary-text-color: #E2E8F0;
+            --secondary-text-color: #A0AEC0;
+            --accent-color: #00B5D8;
+            --accent-shadow: #00A3C4;
+            --border-color: #4A5568;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --disabled-color: #4A5568;
+            --disabled-shadow: #2D3748;
             --completed-color: #FFD700;
-            --success-color: #4CAF50;
-            --success-shadow: #388E3C;
-            --warning-color: #FFA000;
-            --warning-shadow: #F57C00;
+            --success-color: #48BB78;
+            --success-shadow: #38A169;
+            --warning-color: #F6AD55;
+            --warning-shadow: #ED8936;
             --digital-green: #39FF14;
-            --digital-bg: #212121;
+            --digital-bg: #111827;
             --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             --font-family-mono: 'Courier New', monospace;
             --border-radius: 20px;
@@ -35,40 +37,47 @@
         .center-zone { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; min-height: 0; }
         .bottom-zone { width: 100%; text-align: center; flex-shrink: 0; padding-top: 2vh; }
 
-        .main-button { border: none; border-radius: 50px; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 0px var(--shadow-color); background: linear-gradient(180deg, #FFC107, #FF8F00); color: white; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); border: 3px solid white; }
-        .main-button:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 2px 0px var(--shadow-color); }
-        .main-button:disabled { background: var(--disabled-color); box-shadow: 0 8px 0px #9E9E9E; cursor: not-allowed; filter: grayscale(0.5); color: #757575; text-shadow: none; }
+        .main-button { border: none; border-radius: 50px; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.2s; background: var(--accent-color); color: var(--bg-color); text-shadow: none; border: 3px solid rgba(255,255,255,0.4); box-shadow: 0 8px 0px var(--accent-shadow); }
+        .main-button:active:not(:disabled) { transform: translateY(6px) scale(0.98); box-shadow: 0 2px 0px var(--accent-shadow); }
+        .main-button:disabled { background: var(--disabled-color); box-shadow: 0 8px 0px var(--disabled-shadow); cursor: not-allowed; filter: grayscale(0.5); color: #718096; }
+        
+        /* PERFECCIONAMIENTO: Estilo unificado para botones secundarios */
+        .secondary-button { background: var(--border-color); color: var(--primary-text-color); box-shadow: 0 8px 0px #2D3748; }
+        .secondary-button:active:not(:disabled) { box-shadow: 0 2px 0px #2D3748; }
         
         .panel { background: var(--panel-bg-color); border: 4px solid var(--border-color); border-radius: var(--border-radius); box-shadow: 8px 8px 0px var(--shadow-color); padding: 1.5rem; width: 100%; }
-        h1 { font-size: clamp(2.5rem, 10vw, 4.5rem); text-shadow: 3px 3px 0px var(--shadow-color); text-align: center;}
+        h1, h2, h3 { color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
         
         #name-display-container { width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
         #name-display { background: var(--digital-bg); color: var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 1rem; border-radius: 10px; text-align: left; height: 80px; display: flex; align-items: center; }
         #name-cursor { display: inline-block; background: var(--digital-green); width: 1.2ch; height: 2.5rem; animation: blink 1s step-end infinite; }
         #virtual-keyboard { display: grid; width: 100%; max-width: 900px; gap: clamp(5px, 1vw, 10px); grid-template-columns: repeat(20, 1fr); }
-        .keyboard-key { background: white; border: 2px solid var(--border-color); border-radius: 8px; font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary-text-color); cursor: pointer; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; transition: background-color 0.1s; }
-        .functional-key { background-color: #CFD8DC; aspect-ratio: auto; }
+        .keyboard-key { background: #4A5568; border: 2px solid #2D3748; border-radius: 8px; font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary-text-color); cursor: pointer; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; transition: all 0.1s; }
+        .keyboard-key:active { transform: scale(0.95); background-color: #718096; }
+        .functional-key { background-color: #718096; aspect-ratio: auto; }
         .functional-key.shift.active { background-color: var(--accent-color); color: white; }
 
         #profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; max-width: 900px; width: 100%; }
-        .profile-card { background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
-        .profile-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); }
+        .profile-card { background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .profile-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); border-color: var(--accent-color); }
         .profile-name { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); border-bottom: 2px dashed var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
-        .profile-progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; font-size: 1rem; }
         .profile-card.new-profile { border-style: dashed; display: flex; justify-content: center; align-items: center; font-size: 5rem; color: var(--border-color); }
 
         #mode-select-container { display: flex; gap: 2rem; justify-content: center; width: 100%; max-width: 800px; }
-        .mode-card { flex: 1; background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 2rem; cursor: pointer; transition: all 0.2s; }
-        .mode-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); }
+        .mode-card { flex: 1; background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 2rem; cursor: pointer; transition: all 0.2s; }
+        .mode-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); border-color: var(--accent-color); }
         .mode-card h2 { font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem; }
         
         #level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; max-width: 900px; width: 100%; }
-        .level-card { background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
+        .level-card { background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
         .level-card.locked { background: var(--disabled-color); filter: grayscale(1); cursor: not-allowed; }
         .level-card.active { border-color: var(--accent-color); animation: pulse-active-level 2s infinite; }
-        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); }
+        /* PERFECCIONAMIENTO: Sello de la Victoria */
+        .level-card.completed { border-color: var(--completed-color); }
+        .level-card.completed::before { content: '✅'; position: absolute; top: 10px; right: 10px; font-size: 1.5rem; }
+        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); color: var(--primary-text-color); }
 
-        #medals-display { background: rgba(0,0,0,0.1); padding: 0.5rem 1rem; border-radius: 50px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
+        #medals-display { background: rgba(0,0,0,0.2); padding: 0.5rem 1rem; border-radius: 50px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
         .medal { font-size: 2rem; cursor: help; }
         .medal.locked { filter: grayscale(1) brightness(0.7); }
 
@@ -79,16 +88,21 @@
         #payment-area-container { width: 60%; }
         
         #cashier-info { flex: 0 0 35%; display: flex; justify-content: space-around; align-items: center; gap: 1rem; padding: 1rem; }
-        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-        #customer-payment-display { font-weight: bold; font-size: 1.2rem; background: var(--accent-color); color: white; padding: 0.5rem 1rem; border-radius: 10px; margin-top: 0.5rem; }
-        #cashier-avatar { font-size: 5rem; line-height: 1; }
-        #attempt-tracker { display: flex; gap: 0.5rem; font-size: 1.8rem; color: var(--error-color); margin-top: 0.2rem;}
+        
+        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; font-family: var(--font-family-mono); box-shadow: inset 0 6px 10px -8px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.1); }
+        #list-total-display { border-top: 2px dashed var(--border-color); margin-top: auto; padding: 0.5rem; font-weight: bold; font-size: 1.3rem; display: flex; justify-content: space-between; }
         #shopping-list-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 2px; }
-        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; cursor: pointer; transition: all 0.3s ease-out; }
+        .list-item:hover { background-color: rgba(255,255,255,0.1); }
+        .list-item.checked { color: var(--secondary-text-color); text-decoration: line-through; opacity: 0.7; transform: scale(0.98); background-color: rgba(0,0,0,0.2); }
+        
+        #customer-payment-display { font-weight: bold; font-size: 1.2rem; background: var(--accent-color); color: #1A202C; padding: 0.5rem 1rem; border-radius: 10px; margin-top: 0.5rem; }
+        #cashier-avatar { font-size: 5rem; line-height: 1; }
+        #attempt-tracker { display: flex; gap: 0.5rem; font-size: 1.8rem; color: #E53E3E; margin-top: 0.2rem;}
 
         #payment-terminal { height: 100%; display: flex; flex-direction: column; }
         #payment-cart-area { flex-grow: 1; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; border-style: dashed; }
-        #payment-cart-items { flex-grow: 1; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px; background: #ECEFF1; border-radius: 8px; min-height: 100px; }
+        #payment-cart-items { flex-grow: 1; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px; background: #1A202C; border-radius: 8px; min-height: 100px; }
         #payment-total-display { width: 100%; background-color: var(--digital-bg); color: var(--digital-green); text-shadow: 0 0 5px var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 0.5rem; border-radius: 8px; text-align: right; }
 
         .money-item { animation: pop-in 0.2s ease-out; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
@@ -99,24 +113,25 @@
         #bill-denominations { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
         #coin-denominations { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
         #action-controls { display: flex; flex-direction: column; gap: 1rem; height: 100%; justify-content: space-between; }
-        .action-btn { width: 100%; padding: 15px 10px; border-radius: 10px; }
-        #confirm-payment-btn { background: var(--success-color); box-shadow: 0 6px 0px var(--success-shadow); }
-        #correct-last-btn { background: var(--warning-color); box-shadow: 0 6px 0px var(--warning-shadow); }
+        .action-btn { width: 100%; padding: 15px 10px; border-radius: 10px; font-size: 1.2rem; text-shadow: none; border: 3px solid rgba(255,255,255,0.2); }
+        #confirm-payment-btn { background: var(--success-color); box-shadow: 0 6px 0px var(--success-shadow); color: white; }
+        #correct-last-btn { background: var(--warning-color); box-shadow: 0 6px 0px var(--warning-shadow); color: white; font-size: 1.8rem; padding: 10px; }
+        .action-btn:active:not(:disabled) { transform: translateY(4px) scale(0.98); }
+        #confirm-payment-btn:active:not(:disabled) { box-shadow: 0 2px 0px var(--success-shadow); }
+        #correct-last-btn:active:not(:disabled) { box-shadow: 0 2px 0px var(--warning-shadow); }
 
-        .denomination-btn { border: 3px solid white; box-shadow: 0 6px 0px var(--shadow-color); position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+
+        .denomination-btn { border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 6px 0px rgba(0,0,0,0.3); position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+        .denomination-btn:active:not(.disabled) { transform: translateY(4px) scale(0.98); box-shadow: 0 2px 0px rgba(0,0,0,0.3); }
         .denomination-btn.bill-btn { width: 100px; height: 50px; border-radius: 8px; background: #81C784; color: #1B5E20; font-size: 1.2rem; }
         .denomination-btn.coin-btn { width: 65px; height: 65px; border-radius: 50%; background: #FFB74D; color: #E65100; font-size: 1.2rem; }
-        .denomination-count { position: absolute; top: -8px; right: -8px; background: var(--error-color); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--border-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        .denomination-btn.disabled { background: var(--disabled-color); box-shadow: 0 6px 0px #9E9E9E; cursor: not-allowed; filter: grayscale(0.5); color: #757575; }
+        .denomination-count { position: absolute; top: -8px; right: -8px; background: #E53E3E; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--border-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+        .denomination-btn.disabled { background: var(--disabled-color); box-shadow: 0 6px 0px var(--disabled-shadow); cursor: not-allowed; filter: grayscale(0.5); color: #718096; }
 
         #verifying-screen h1 { animation: pulse-verifying-text 1.5s infinite; }
         
-        #sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; max-width: 800px; padding: 1.5rem; }
-        .sticker-slot { background: rgba(0,0,0,0.1); border-radius: var(--border-radius); border: 3px dashed var(--border-color); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--border-color); }
-        .sticker-slot.unlocked { background: white; border-style: solid; }
-        
         @keyframes blink { 50% { background-color: transparent; } }
-        @keyframes pulse-active-level { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 112, 67, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(255, 112, 67, 0); } }
+        @keyframes pulse-active-level { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 181, 216, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(0, 181, 216, 0); } }
         @keyframes pulse-verifying-text { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         @media (max-width: 1024px) { #game-layout-container { flex-direction: column; } #left-panel, #payment-area-container { width: 100%; max-height: none; } #payment-controls-container { grid-template-columns: 1fr; } }
     </style>
@@ -128,7 +143,7 @@
     <div id="mode-select-screen" class="screen"><div class="top-zone"><h1 id="mode-select-title">Seleccione Protocolo</h1></div><div class="center-zone"><div id="mode-select-container"><div class="mode-card" data-mode="CALCULO"><h2>Modo Cálculo</h2><p>Paga el total exacto de la lista.</p></div><div class="mode-card" data-mode="VUELTO"><h2>Modo Vuelto</h2><p>Entrega el vuelto exacto.</p></div></div></div><div class="bottom-zone"><button id="mode-select-back-button" class="main-button">Cambiar Operador</button></div></div>
     <div id="level-select-screen" class="screen"><div class="top-zone"><h1 id="level-select-title">Panel de Misiones</h1><div id="medals-display"></div></div><div class="center-zone"><div id="level-grid" class="panel"></div></div><div class="bottom-zone"><div class="action-bar"><button id="album-button" class="main-button secondary-button">Mi Álbum</button><button id="level-select-back-button" class="main-button">Cambiar Modo</button></div></div></div>
     <div id="album-screen" class="screen"><div class="top-zone"><h1>Álbum de Recompensas</h1></div><div class="center-zone"><div id="sticker-grid" class="panel"></div></div><div class="bottom-zone"><button id="album-back-button" class="main-button">Volver al Panel</button></div></div>
-    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">Quitar</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
+    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div><div id="list-total-display"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">⌫</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
     <div id="verifying-screen" class="screen"><div class="center-zone"><h1>Verificando...</h1></div></div>
     <div id="transition-screen" class="screen"><div class="center-zone"><h1 id="transition-title"></h1><div id="transition-details"></div><div id="transition-button-container" style="margin-top:2rem; display:flex; gap:1rem; justify-content:center;"></div></div></div>
 
@@ -137,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const CONSTANTS = {
         SCREENS: { TITLE: 'title-screen', PROFILE_SELECT: 'profile-select-screen', NAME_ENTRY: 'name-entry-screen', MODE_SELECT: 'mode-select-screen', LEVEL_SELECT: 'level-select-screen', ALBUM: 'album-screen', GAME: 'game-screen', VERIFYING: 'verifying-screen', TRANSITION: 'transition-screen' },
-        STORAGE_KEY: 'OPERATOR_PROFILES_V22',
+        STORAGE_KEY: 'OPERATOR_PROFILES_V27',
         MAX_LEVELS: 10, PURCHASES_PER_LEVEL: 5, MAX_ATTEMPTS: 3
     };
     let playerData = {};
@@ -166,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cashierAvatar: document.getElementById('cashier-avatar'), cashierName: document.getElementById('cashier-name'), 
         customerPaymentDisplay: document.getElementById('customer-payment-display'),
         attemptTracker: document.getElementById('attempt-tracker'), purchaseProgressTracker: document.getElementById('purchase-progress-tracker'), gameLevelTitle: document.getElementById('game-level-title'), 
-        shoppingListItems: document.getElementById('shopping-list-items'), 
+        shoppingListItems: document.getElementById('shopping-list-items'), listTotalDisplay: document.getElementById('list-total-display'),
         billDenominations: document.getElementById('bill-denominations'), coinDenominations: document.getElementById('coin-denominations'),
         paymentTerminalTitle: document.getElementById('payment-terminal-title'), paymentTotalLabel: document.getElementById('payment-total-label'),
         paymentCartItems: document.getElementById('payment-cart-items'), paymentTotalDisplay: document.getElementById('payment-total-display'), 
@@ -174,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         transitionTitle: document.getElementById('transition-title'), transitionDetails: document.getElementById('transition-details'), transitionButtonContainer: document.getElementById('transition-button-container'), 
         stickerGrid: document.getElementById('sticker-grid'),
     };
-
+    
     function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
     function formatCurrency(amount) { return `$${amount.toFixed(2)}`; }
     
@@ -193,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.amountPaid = 0; gameState.attemptCount = 0;
         gameState.availableDenominations = { ...cashDrawerContents[config.drawer] };
         if (gameState.currentMode === 'VUELTO') {
-            const paymentOptions = [10, 20, 50, 100, 200, 500].filter(p => p > gameState.targetTotal);
+            const paymentOptions = [10, 20, 50, 100, 200, 500, 1000].filter(p => p > gameState.targetTotal);
             gameState.customerPayment = paymentOptions.length > 0 ? paymentOptions[0] : gameState.targetTotal + 50;
         }
         setupGameUI();
@@ -205,8 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.shoppingList.forEach(item => {
             const listItem = document.createElement('div'); listItem.className = 'list-item';
             listItem.innerHTML = `<span>${item.emoji}</span><span class="list-item-price">${formatCurrency(item.price)}</span>`;
+            listItem.addEventListener('click', () => listItem.classList.toggle('checked'));
             dom.shoppingListItems.appendChild(listItem);
         });
+        dom.listTotalDisplay.innerHTML = `<span>TOTAL:</span><span>${formatCurrency(gameState.targetTotal)}</span>`;
         dom.paymentCartItems.innerHTML = '';
         if(gameState.currentMode === 'VUELTO'){
             dom.customerPaymentDisplay.textContent = `Cliente Paga: ${formatCurrency(gameState.customerPayment)}`;
@@ -233,7 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePurchaseProgressUI() { dom.purchaseProgressTracker.textContent = `${gameState.successfulPurchases} / ${CONSTANTS.PURCHASES_PER_LEVEL}`; }
     function updatePaymentTotalDisplay() { dom.paymentTotalDisplay.textContent = formatCurrency(gameState.amountPaid); }
     function updateDenominationButtons() { document.querySelectorAll('.denomination-btn').forEach(btn => { const value = parseInt(btn.dataset.value); const count = gameState.availableDenominations[value] || 0; btn.querySelector('.denomination-count').textContent = `x${count}`; btn.classList.toggle('disabled', count === 0); }); }
-    function updateActionButtonsState() { dom.confirmPaymentBtn.disabled = gameState.amountPaid === 0; }
+    function updateActionButtonsState() {
+        const canAct = gameState.amountPaid > 0;
+        dom.confirmPaymentBtn.disabled = !canAct;
+        dom.correctLastBtn.disabled = !canAct;
+    }
 
     function initiateVerification() {
         if (gameState.isVerifying || dom.confirmPaymentBtn.disabled) return;
@@ -287,9 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameState.levelErrors === 0) newlyAwardedMedal = awardMedal(MEDALS.PRECISION.id);
         
         if (gameState.currentLevel === modeData.maxLevel) modeData.maxLevel++;
-        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) {
-            newlyAwardedMedal = awardMedal(MEDALS.PERFECTION.id) || newlyAwardedMedal;
-        }
+        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) newlyAwardedMedal = awardMedal(MEDALS.PERFECTION.id) || newlyAwardedMedal;
         savePlayerData();
 
         dom.transitionTitle.textContent = `🎉 ¡NIVEL ${gameState.currentLevel} COMPLETADO! 🎉`;
@@ -432,14 +451,15 @@ document.addEventListener('DOMContentLoaded', () => {
         newProfileCard.addEventListener('click', () => showScreen(CONSTANTS.SCREENS.NAME_ENTRY));
         dom.profileGrid.appendChild(newProfileCard);
     }
-    
+
     function setupAlbumScreen() {
         const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
         dom.stickerGrid.innerHTML = '';
         levelStickers.forEach((sticker, index) => {
             const slot = document.createElement('div');
             slot.className = 'sticker-slot';
-            slot.textContent = modeData.unlockedStickers.includes(sticker) ? sticker : `❓`;
+            const levelNum = index + 1;
+            slot.textContent = modeData.unlockedStickers.includes(sticker) ? sticker : `${levelNum}`;
             if (modeData.unlockedStickers.includes(sticker)) slot.classList.add('unlocked');
             dom.stickerGrid.appendChild(slot);
         });
@@ -450,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         document.getElementById('start-button').addEventListener('click', () => { requestFullscreen(); setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
-        setupNameEntryScreen(); setupPaymentTerminal();
         document.getElementById('name-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
         document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click', (e) => { gameState.currentMode = e.currentTarget.dataset.mode; setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); }));
         document.getElementById('mode-select-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
@@ -461,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.correctLastBtn.addEventListener('click', () => { const last = dom.paymentCartItems.lastElementChild; if(last) last.click(); });
         dom.confirmPaymentBtn.addEventListener('click', initiateVerification);
         
+        setupNameEntryScreen(); setupPaymentTerminal();
         loadPlayerData();
     }
     
