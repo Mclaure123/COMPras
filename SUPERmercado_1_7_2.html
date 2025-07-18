@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol Zero :: Functional Completion v23.0 FINAL</title>
+    <style>
+        :root {
+            --bg-color: #A9D6E5;
+            --panel-bg-color: #FFF8E1;
+            --primary-text-color: #01579B;
+            --secondary-text-color: #455A64;
+            --accent-color: #FF7043;
+            --border-color: #4F3A2A;
+            --shadow-color: rgba(79, 58, 42, 0.4);
+            --disabled-color: #BDBDBD;
+            --completed-color: #FFD700;
+            --success-color: #4CAF50;
+            --success-shadow: #388E3C;
+            --warning-color: #FFA000;
+            --warning-shadow: #F57C00;
+            --digital-green: #39FF14;
+            --digital-bg: #212121;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --font-family-mono: 'Courier New', monospace;
+            --border-radius: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: var(--font-family); background-color: var(--bg-color); color: var(--primary-text-color); }
+        .screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 3vh 3vw; position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0.4s; text-align: center; }
+        .screen.active { opacity: 1; visibility: visible; }
+        .top-zone { width: 100%; text-align: center; flex-shrink: 0; padding-bottom: 2vh; }
+        .center-zone { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; min-height: 0; }
+        .bottom-zone { width: 100%; text-align: center; flex-shrink: 0; padding-top: 2vh; }
+
+        .main-button { border: none; border-radius: 50px; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 0px var(--shadow-color); background: linear-gradient(180deg, #FFC107, #FF8F00); color: white; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); border: 3px solid white; }
+        .main-button:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 2px 0px var(--shadow-color); }
+        .main-button:disabled { background: var(--disabled-color); box-shadow: 0 8px 0px #9E9E9E; cursor: not-allowed; filter: grayscale(0.5); color: #757575; text-shadow: none; }
+        
+        .panel { background: var(--panel-bg-color); border: 4px solid var(--border-color); border-radius: var(--border-radius); box-shadow: 8px 8px 0px var(--shadow-color); padding: 1.5rem; width: 100%; }
+        h1 { font-size: clamp(2.5rem, 10vw, 4.5rem); text-shadow: 3px 3px 0px var(--shadow-color); text-align: center;}
+        
+        #name-display-container { width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
+        #name-display { background: var(--digital-bg); color: var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 1rem; border-radius: 10px; text-align: left; height: 80px; display: flex; align-items: center; }
+        #name-cursor { display: inline-block; background: var(--digital-green); width: 1.2ch; height: 2.5rem; animation: blink 1s step-end infinite; }
+        #virtual-keyboard { display: grid; width: 100%; max-width: 900px; gap: clamp(5px, 1vw, 10px); grid-template-columns: repeat(20, 1fr); }
+        .keyboard-key { background: white; border: 2px solid var(--border-color); border-radius: 8px; font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary-text-color); cursor: pointer; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; transition: background-color 0.1s; }
+        .functional-key { background-color: #CFD8DC; aspect-ratio: auto; }
+        .functional-key.shift.active { background-color: var(--accent-color); color: white; }
+
+        #profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; max-width: 900px; width: 100%; }
+        .profile-card { background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .profile-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); }
+        .profile-name { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); border-bottom: 2px dashed var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .profile-progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; font-size: 1rem; }
+        .profile-card.new-profile { border-style: dashed; display: flex; justify-content: center; align-items: center; font-size: 5rem; color: var(--border-color); }
+
+        #mode-select-container { display: flex; gap: 2rem; justify-content: center; width: 100%; max-width: 800px; }
+        .mode-card { flex: 1; background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 2rem; cursor: pointer; transition: all 0.2s; }
+        .mode-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); }
+        .mode-card h2 { font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem; }
+        
+        #level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; max-width: 900px; width: 100%; }
+        .level-card { background: white; border: 4px solid var(--border-color); border-radius: var(--border-radius); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
+        .level-card.locked { background: var(--disabled-color); filter: grayscale(1); cursor: not-allowed; }
+        .level-card.active { border-color: var(--accent-color); animation: pulse-active-level 2s infinite; }
+        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); }
+
+        #medals-display { background: rgba(0,0,0,0.1); padding: 0.5rem 1rem; border-radius: 50px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
+        .medal { font-size: 2rem; cursor: help; }
+        .medal.locked { filter: grayscale(1) brightness(0.7); }
+
+        .action-bar { display: flex; justify-content: center; gap: 1rem; align-items: center; }
+
+        #game-layout-container { display: flex; width: 100%; max-width: 1400px; margin: 0 auto; gap: 2vw; flex-grow: 1; min-height: 0; }
+        #left-panel { width: 40%; display: flex; flex-direction: column; gap: 1.5rem; }
+        #payment-area-container { width: 60%; }
+        
+        #cashier-info { flex: 0 0 35%; display: flex; justify-content: space-around; align-items: center; gap: 1rem; padding: 1rem; }
+        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+        #customer-payment-display { font-weight: bold; font-size: 1.2rem; background: var(--accent-color); color: white; padding: 0.5rem 1rem; border-radius: 10px; margin-top: 0.5rem; }
+        #cashier-avatar { font-size: 5rem; line-height: 1; }
+        #attempt-tracker { display: flex; gap: 0.5rem; font-size: 1.8rem; color: var(--error-color); margin-top: 0.2rem;}
+        #shopping-list-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 2px; }
+        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+
+        #payment-terminal { height: 100%; display: flex; flex-direction: column; }
+        #payment-cart-area { flex-grow: 1; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; border-style: dashed; }
+        #payment-cart-items { flex-grow: 1; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px; background: #ECEFF1; border-radius: 8px; min-height: 100px; }
+        #payment-total-display { width: 100%; background-color: var(--digital-bg); color: var(--digital-green); text-shadow: 0 0 5px var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 0.5rem; border-radius: 8px; text-align: right; }
+
+        .money-item { animation: pop-in 0.2s ease-out; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .money-item.bill { width: 70px; height: 35px; border-radius: 5px; background: #C8E6C9; color: #1B5E20; border: 2px solid #66BB6A; font-size: 1.8rem; }
+        .money-item.coin { width: 45px; height: 45px; border-radius: 50%; padding: 0; background: #FFB74D; color: #E65100; font-size: 1rem; }
+        
+        #payment-controls-container { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 1rem; align-items: start; }
+        #bill-denominations { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+        #coin-denominations { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        #action-controls { display: flex; flex-direction: column; gap: 1rem; height: 100%; justify-content: space-between; }
+        .action-btn { width: 100%; padding: 15px 10px; border-radius: 10px; }
+        #confirm-payment-btn { background: var(--success-color); box-shadow: 0 6px 0px var(--success-shadow); }
+        #correct-last-btn { background: var(--warning-color); box-shadow: 0 6px 0px var(--warning-shadow); }
+
+        .denomination-btn { border: 3px solid white; box-shadow: 0 6px 0px var(--shadow-color); position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .denomination-btn.bill-btn { width: 100px; height: 50px; border-radius: 8px; background: #81C784; color: #1B5E20; font-size: 1.2rem; }
+        .denomination-btn.coin-btn { width: 65px; height: 65px; border-radius: 50%; background: #FFB74D; color: #E65100; font-size: 1.2rem; }
+        .denomination-count { position: absolute; top: -8px; right: -8px; background: var(--error-color); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--border-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+        .denomination-btn.disabled { background: var(--disabled-color); box-shadow: 0 6px 0px #9E9E9E; cursor: not-allowed; filter: grayscale(0.5); color: #757575; }
+
+        #verifying-screen h1 { animation: pulse-verifying-text 1.5s infinite; }
+        
+        #sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; max-width: 800px; padding: 1.5rem; }
+        .sticker-slot { background: rgba(0,0,0,0.1); border-radius: var(--border-radius); border: 3px dashed var(--border-color); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--border-color); }
+        .sticker-slot.unlocked { background: white; border-style: solid; }
+        
+        @keyframes blink { 50% { background-color: transparent; } }
+        @keyframes pulse-active-level { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 112, 67, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(255, 112, 67, 0); } }
+        @keyframes pulse-verifying-text { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @media (max-width: 1024px) { #game-layout-container { flex-direction: column; } #left-panel, #payment-area-container { width: 100%; max-height: none; } #payment-controls-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="title-screen" class="screen active"><div class="center-zone"><h1>La Tiendita</h1><button id="start-button" class="main-button" style="margin-top: 2rem;">Iniciar Sistema</button></div></div>
+    <div id="profile-select-screen" class="screen"><div class="top-zone"><h1>Seleccione Archivo de Operador</h1></div><div class="center-zone"><div id="profile-grid"></div></div></div>
+    <div id="name-entry-screen" class="screen"><div class="top-zone"><h3>NUEVO IDENTIFICADOR DE OPERADOR</h3><div id="name-display-container" class="panel"><div id="name-display"><span id="name-text"></span><span id="name-cursor"></span></div></div></div><div class="center-zone"><div id="virtual-keyboard"></div></div><div class="bottom-zone"><button id="name-back-button" class="main-button">Volver</button></div></div>
+    <div id="mode-select-screen" class="screen"><div class="top-zone"><h1 id="mode-select-title">Seleccione Protocolo</h1></div><div class="center-zone"><div id="mode-select-container"><div class="mode-card" data-mode="CALCULO"><h2>Modo Cálculo</h2><p>Paga el total exacto de la lista.</p></div><div class="mode-card" data-mode="VUELTO"><h2>Modo Vuelto</h2><p>Entrega el vuelto exacto.</p></div></div></div><div class="bottom-zone"><button id="mode-select-back-button" class="main-button">Cambiar Operador</button></div></div>
+    <div id="level-select-screen" class="screen"><div class="top-zone"><h1 id="level-select-title">Panel de Misiones</h1><div id="medals-display"></div></div><div class="center-zone"><div id="level-grid" class="panel"></div></div><div class="bottom-zone"><div class="action-bar"><button id="album-button" class="main-button secondary-button">Mi Álbum</button><button id="level-select-back-button" class="main-button">Cambiar Modo</button></div></div></div>
+    <div id="album-screen" class="screen"><div class="top-zone"><h1>Álbum de Recompensas</h1></div><div class="center-zone"><div id="sticker-grid" class="panel"></div></div><div class="bottom-zone"><button id="album-back-button" class="main-button">Volver al Panel</button></div></div>
+    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">Quitar</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
+    <div id="verifying-screen" class="screen"><div class="center-zone"><h1>Verificando...</h1></div></div>
+    <div id="transition-screen" class="screen"><div class="center-zone"><h1 id="transition-title"></h1><div id="transition-details"></div><div id="transition-button-container" style="margin-top:2rem; display:flex; gap:1rem; justify-content:center;"></div></div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const CONSTANTS = {
+        SCREENS: { TITLE: 'title-screen', PROFILE_SELECT: 'profile-select-screen', NAME_ENTRY: 'name-entry-screen', MODE_SELECT: 'mode-select-screen', LEVEL_SELECT: 'level-select-screen', ALBUM: 'album-screen', GAME: 'game-screen', VERIFYING: 'verifying-screen', TRANSITION: 'transition-screen' },
+        STORAGE_KEY: 'OPERATOR_PROFILES_V22',
+        MAX_LEVELS: 10, PURCHASES_PER_LEVEL: 5, MAX_ATTEMPTS: 3
+    };
+    let playerData = {};
+    const gameState = { currentOperatorName: '', currentMode: 'CALCULO', currentLevel: 0, successfulPurchases: 0, levelErrors: 0, shoppingList: [], targetTotal: 0, customerPayment: 0, amountPaid: 0, isVerifying: false, firstInteraction: true, attemptCount: 0 };
+    
+    const MEDALS = {
+        PRECISION: { id: 'precision', emoji: '🥇', title: 'Medalla de Precisión: Completa un nivel sin errores.'},
+        PERFECTION: { id: 'perfection', emoji: '🏆', title: 'Medalla de Perfección: Completa todos los niveles en un modo.'}
+    };
+    const levelStickers = ['🍏', '🍞', '🥛', '🥚', '🍗', '🐟', '🍾', '🧸', '📓', '🔋'];
+
+    const LEVEL_CONFIG = [
+        { minItems: 2, maxItems: 3, minPrice: 5, maxPrice: 20, drawer: 'easy' }, { minItems: 3, maxItems: 4, minPrice: 10, maxPrice: 30, drawer: 'easy' },
+        { minItems: 3, maxItems: 5, minPrice: 20, maxPrice: 50, drawer: 'medium' }, { minItems: 4, maxItems: 5, minPrice: 30, maxPrice: 70, drawer: 'medium' },
+        { minItems: 5, maxItems: 7, minPrice: 50, maxPrice: 100, drawer: 'medium' }, { minItems: 5, maxItems: 7, minPrice: 70, maxPrice: 150, drawer: 'medium' },
+        { minItems: 6, maxItems: 8, minPrice: 100, maxPrice: 250, drawer: 'hard' }, { minItems: 7, maxItems: 9, minPrice: 150, maxPrice: 300, drawer: 'hard' },
+        { minItems: 8, maxItems: 10, minPrice: 200, maxPrice: 400, drawer: 'hard' }, { minItems: 8, maxItems: 10, minPrice: 250, maxPrice: 500, drawer: 'hard' }
+    ];
+    const denominations = [ {v: 200, e: '💵', type: 'bill'}, {v: 100, e: '💵', type: 'bill'}, {v: 50, e: '💵', type: 'bill'}, {v: 20, e: '💵', type: 'bill'}, {v: 10, e: '💵', type: 'bill'}, {v: 5, e: '🪙', type: 'coin'}, {v: 2, e: '🪙', type: 'coin'}, {v: 1, e: '🪙', type: 'coin'} ];
+    const cashDrawerContents = { easy: { 50: 1, 20: 2, 10: 4, 5: 2, 2: 2, 1: 3 }, medium: { 100: 1, 50: 1, 20: 2, 10: 3, 5: 2, 2: 2, 1: 2 }, hard: { 200: 2, 100: 1, 50: 1, 20: 1, 10: 2, 5: 1, 2: 2, 1: 2 } };
+
+    const dom = { 
+        nameText: document.getElementById('name-text'), virtualKeyboard: document.getElementById('virtual-keyboard'),
+        profileGrid: document.getElementById('profile-grid'),
+        levelGrid: document.getElementById('level-grid'), levelSelectTitle: document.getElementById('level-select-title'), medalsDisplay: document.getElementById('medals-display'),
+        cashierAvatar: document.getElementById('cashier-avatar'), cashierName: document.getElementById('cashier-name'), 
+        customerPaymentDisplay: document.getElementById('customer-payment-display'),
+        attemptTracker: document.getElementById('attempt-tracker'), purchaseProgressTracker: document.getElementById('purchase-progress-tracker'), gameLevelTitle: document.getElementById('game-level-title'), 
+        shoppingListItems: document.getElementById('shopping-list-items'), 
+        billDenominations: document.getElementById('bill-denominations'), coinDenominations: document.getElementById('coin-denominations'),
+        paymentTerminalTitle: document.getElementById('payment-terminal-title'), paymentTotalLabel: document.getElementById('payment-total-label'),
+        paymentCartItems: document.getElementById('payment-cart-items'), paymentTotalDisplay: document.getElementById('payment-total-display'), 
+        correctLastBtn: document.getElementById('correct-last-btn'), confirmPaymentBtn: document.getElementById('confirm-payment-btn'), 
+        transitionTitle: document.getElementById('transition-title'), transitionDetails: document.getElementById('transition-details'), transitionButtonContainer: document.getElementById('transition-button-container'), 
+        stickerGrid: document.getElementById('sticker-grid'),
+    };
+
+    function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
+    function formatCurrency(amount) { return `$${amount.toFixed(2)}`; }
+    
+    function startNewPurchase(level) {
+        gameState.currentLevel = level;
+        const config = LEVEL_CONFIG[level - 1];
+        const numItems = Math.floor(Math.random() * (config.maxItems - config.minItems + 1)) + config.minItems;
+        const shuffledPool = [..."🍏🍞🥛🥚🍗🐟🍾🧸📓🔋🥤🧀"].sort(() => 0.5 - Math.random());
+        gameState.shoppingList = [];
+        let calculatedTotal = 0;
+        for(let i = 0; i < numItems; i++) {
+            const item = { emoji: shuffledPool[i], price: Math.floor(Math.random() * (config.maxPrice - config.minPrice + 1)) + config.minPrice };
+            calculatedTotal += item.price; gameState.shoppingList.push(item);
+        }
+        gameState.targetTotal = calculatedTotal;
+        gameState.amountPaid = 0; gameState.attemptCount = 0;
+        gameState.availableDenominations = { ...cashDrawerContents[config.drawer] };
+        if (gameState.currentMode === 'VUELTO') {
+            const paymentOptions = [10, 20, 50, 100, 200, 500].filter(p => p > gameState.targetTotal);
+            gameState.customerPayment = paymentOptions.length > 0 ? paymentOptions[0] : gameState.targetTotal + 50;
+        }
+        setupGameUI();
+    }
+
+    function setupGameUI() {
+        dom.gameLevelTitle.textContent = `${gameState.currentMode === 'VUELTO' ? 'Vuelto' : 'Cálculo'} - Nivel ${gameState.currentLevel}`;
+        dom.shoppingListItems.innerHTML = '';
+        gameState.shoppingList.forEach(item => {
+            const listItem = document.createElement('div'); listItem.className = 'list-item';
+            listItem.innerHTML = `<span>${item.emoji}</span><span class="list-item-price">${formatCurrency(item.price)}</span>`;
+            dom.shoppingListItems.appendChild(listItem);
+        });
+        dom.paymentCartItems.innerHTML = '';
+        if(gameState.currentMode === 'VUELTO'){
+            dom.customerPaymentDisplay.textContent = `Cliente Paga: ${formatCurrency(gameState.customerPayment)}`;
+            dom.customerPaymentDisplay.style.display = 'block';
+            dom.paymentTerminalTitle.textContent = "Bandeja de Vuelto";
+            dom.paymentTotalLabel.textContent = "Vuelto Entregado";
+        } else {
+            dom.customerPaymentDisplay.style.display = 'none';
+            dom.paymentTerminalTitle.textContent = "Terminal de Pago";
+            dom.paymentTotalLabel.textContent = "Total Pagado";
+        }
+        updateAttemptTrackerUI(); updatePurchaseProgressUI(); updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
+    }
+
+    function resetFailedAttempt() {
+        const moneyItems = dom.paymentCartItems.querySelectorAll('.money-item');
+        moneyItems.forEach(item => { const value = parseInt(item.dataset.value); if (gameState.availableDenominations[value] !== undefined) gameState.availableDenominations[value]++; });
+        gameState.amountPaid = 0;
+        dom.paymentCartItems.innerHTML = '';
+        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
+    }
+
+    function updateAttemptTrackerUI() { dom.attemptTracker.innerHTML = Array.from({ length: CONSTANTS.MAX_ATTEMPTS }, (_, i) => `<span class="${i < gameState.attemptCount ? 'attempt-used' : ''}">${i < gameState.attemptCount ? '🤍' : '❤️'}</span>`).join(''); }
+    function updatePurchaseProgressUI() { dom.purchaseProgressTracker.textContent = `${gameState.successfulPurchases} / ${CONSTANTS.PURCHASES_PER_LEVEL}`; }
+    function updatePaymentTotalDisplay() { dom.paymentTotalDisplay.textContent = formatCurrency(gameState.amountPaid); }
+    function updateDenominationButtons() { document.querySelectorAll('.denomination-btn').forEach(btn => { const value = parseInt(btn.dataset.value); const count = gameState.availableDenominations[value] || 0; btn.querySelector('.denomination-count').textContent = `x${count}`; btn.classList.toggle('disabled', count === 0); }); }
+    function updateActionButtonsState() { dom.confirmPaymentBtn.disabled = gameState.amountPaid === 0; }
+
+    function initiateVerification() {
+        if (gameState.isVerifying || dom.confirmPaymentBtn.disabled) return;
+        showScreen(CONSTANTS.SCREENS.VERIFYING);
+        setTimeout(processVerification, 1500);
+    }
+    
+    function processVerification() {
+        const requiredAmount = gameState.currentMode === 'VUELTO' ? (gameState.customerPayment - gameState.targetTotal) : gameState.targetTotal;
+        const isCorrect = Math.abs(gameState.amountPaid - requiredAmount) < 0.001;
+        if (isCorrect) gameState.successfulPurchases++; 
+        else { gameState.attemptCount++; gameState.levelErrors++; }
+        showPurchaseTransition(isCorrect);
+    }
+
+    function showPurchaseTransition(isCorrect) {
+        dom.transitionButtonContainer.innerHTML = '';
+        const isLevelComplete = gameState.successfulPurchases >= CONSTANTS.PURCHASES_PER_LEVEL;
+
+        if (isCorrect) {
+            if (isLevelComplete) { handleLevelComplete(); return; }
+            dom.transitionTitle.textContent = '✅ ¡TRANSACCIÓN CORRECTA! ✅';
+            const nextButton = document.createElement('button'); nextButton.className = 'main-button';
+            nextButton.textContent = 'Siguiente Cliente';
+            nextButton.onclick = () => { startNewPurchase(gameState.currentLevel); showScreen(CONSTANTS.SCREENS.GAME); };
+            dom.transitionButtonContainer.appendChild(nextButton);
+        } else {
+            const isOutOfTries = gameState.attemptCount >= CONSTANTS.MAX_ATTEMPTS;
+            dom.transitionTitle.textContent = '❌ ¡CÁLCULO INCORRECTO! ❌';
+            const requiredAmount = gameState.currentMode === 'VUELTO' ? (gameState.customerPayment - gameState.targetTotal) : gameState.targetTotal;
+            dom.transitionDetails.innerHTML = `<p>${gameState.amountPaid < requiredAmount ? 'Falta dinero.' : 'Es demasiado dinero.'}</p>`;
+            const retryButton = document.createElement('button'); retryButton.className = 'main-button';
+            retryButton.textContent = isOutOfTries ? 'Reiniciar Transacción' : 'Intentar de Nuevo';
+            retryButton.onclick = () => {
+                isOutOfTries ? startNewPurchase(gameState.currentLevel) : resetFailedAttempt();
+                setupGameUI(); showScreen(CONSTANTS.SCREENS.GAME);
+            };
+            dom.transitionButtonContainer.appendChild(retryButton);
+        }
+        showScreen(CONSTANTS.SCREENS.TRANSITION);
+    }
+    
+    function handleLevelComplete() {
+        const charData = playerData[gameState.currentOperatorName];
+        const modeData = charData[gameState.currentMode];
+        let newlyAwardedMedal = null;
+        
+        const newSticker = levelStickers[gameState.currentLevel - 1];
+        if (!modeData.unlockedStickers.includes(newSticker)) modeData.unlockedStickers.push(newSticker);
+
+        if (gameState.levelErrors === 0) newlyAwardedMedal = awardMedal(MEDALS.PRECISION.id);
+        
+        if (gameState.currentLevel === modeData.maxLevel) modeData.maxLevel++;
+        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) {
+            newlyAwardedMedal = awardMedal(MEDALS.PERFECTION.id) || newlyAwardedMedal;
+        }
+        savePlayerData();
+
+        dom.transitionTitle.textContent = `🎉 ¡NIVEL ${gameState.currentLevel} COMPLETADO! 🎉`;
+        dom.transitionDetails.innerHTML = newlyAwardedMedal ? `<h3>🏆 MEDALLA DESBLOQUEADA 🏆</h3><p>${newlyAwardedMedal.title}</p>` : `<p>Sticker de Nivel Obtenido: <span style="font-size: 2rem; vertical-align: middle;">${newSticker}</span></p>`;
+        
+        const nextButton = document.createElement('button'); nextButton.className = 'main-button';
+        nextButton.textContent = 'Volver al Panel';
+        nextButton.onclick = () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); };
+        dom.transitionButtonContainer.innerHTML = '';
+        dom.transitionButtonContainer.appendChild(nextButton);
+        showScreen(CONSTANTS.SCREENS.TRANSITION);
+    }
+
+    function awardMedal(medalId) {
+        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
+        if (!modeData.medals.includes(medalId)) {
+            modeData.medals.push(medalId);
+            return MEDALS[medalId.toUpperCase()];
+        }
+        return null;
+    }
+
+    function setupLevelSelectScreen() {
+        dom.levelSelectTitle.innerHTML = `Operador: <span style="color:var(--accent-color);">${gameState.currentOperatorName}</span> - Modo ${gameState.currentMode}`;
+        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
+        dom.medalsDisplay.innerHTML = '';
+        Object.values(MEDALS).forEach(medal => {
+            const hasMedal = modeData.medals.includes(medal.id);
+            const medalEl = document.createElement('span');
+            medalEl.className = `medal ${hasMedal ? 'unlocked' : 'locked'}`;
+            medalEl.textContent = medal.emoji;
+            medalEl.title = medal.title;
+            dom.medalsDisplay.appendChild(medalEl);
+        });
+
+        dom.levelGrid.innerHTML = '';
+        for (let i = 1; i <= CONSTANTS.MAX_LEVELS; i++) {
+            const card = document.createElement('div'); card.className = 'level-card';
+            let label = `<span class="level-number">${i}</span>`;
+            if (i < modeData.maxLevel) card.classList.add('completed');
+            else if (i === modeData.maxLevel) card.classList.add('active');
+            else { card.classList.add('locked'); label = ''; }
+            card.innerHTML = label;
+
+            if (!card.classList.contains('locked')) {
+                card.addEventListener('click', () => {
+                    dom.cashierAvatar.textContent = '🤖'; dom.cashierName.textContent = gameState.currentOperatorName;
+                    gameState.successfulPurchases = 0; gameState.levelErrors = 0;
+                    startNewPurchase(i); showScreen(CONSTANTS.SCREENS.GAME);
+                });
+            }
+            dom.levelGrid.appendChild(card);
+        }
+    }
+
+    function addMoneyToCart(value, type) { 
+        if (gameState.isVerifying) return; 
+        gameState.amountPaid += value; gameState.availableDenominations[value]--; 
+        const moneyElement = document.createElement('div'); moneyElement.className = `money-item ${type}`; 
+        moneyElement.textContent = type === 'bill' ? denominations.find(d => d.v === value).e : `$${value}`;
+        moneyElement.dataset.value = value; 
+        moneyElement.addEventListener('click', handleMoneyItemClick); 
+        dom.paymentCartItems.appendChild(moneyElement); 
+        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
+    }
+    
+    function setupNameEntryScreen() {
+        let currentName = ''; let isShiftActive = true;
+        const layout = ['Q','W','E','R','T','Y','U','I','O','P','@','A','S','D','F','G','H','J','K','L','SHIFT','Z','X','C','V','B','N','M','BACKSPACE','ENTER'];
+        dom.virtualKeyboard.innerHTML = '';
+        
+        layout.forEach(key => {
+            const keyEl = document.createElement('button');
+            keyEl.className = 'keyboard-key'; keyEl.dataset.key = key;
+
+            if ('QWERTYUIOP@ASDFGHJKLZXCVBNM'.includes(key)) keyEl.style.gridColumn = 'auto / span 2';
+            if (key === 'SHIFT') keyEl.style.gridColumn = '1 / span 3';
+            if (key === 'Z') keyEl.style.gridColumnStart = '4';
+            if (key === 'BACKSPACE') keyEl.style.gridColumn = '18 / span 3';
+            if (key === 'ENTER') keyEl.style.gridColumn = '1 / -1';
+           
+            if ('SHIFT' === key) {
+                keyEl.classList.add('functional-key', 'shift'); keyEl.textContent = '⇧';
+                keyEl.addEventListener('click', () => { isShiftActive = !isShiftActive; updateKeyboardVisuals(); });
+            } else if ('BACKSPACE' === key) {
+                keyEl.classList.add('functional-key', 'backspace'); keyEl.textContent = '⌫';
+                keyEl.addEventListener('click', () => { currentName = currentName.slice(0, -1); dom.nameText.textContent = currentName; });
+            } else if ('ENTER' === key) {
+                keyEl.classList.add('functional-key'); keyEl.textContent = 'ENTER';
+                keyEl.addEventListener('click', () => {
+                    if (currentName.trim().length === 0) return;
+                    gameState.currentOperatorName = currentName.trim();
+                    if (!playerData[gameState.currentOperatorName]) {
+                        playerData[gameState.currentOperatorName] = { CALCULO: { maxLevel: 1, medals: [], unlockedStickers:[] }, VUELTO: { maxLevel: 1, medals: [], unlockedStickers:[] } };
+                        savePlayerData();
+                    }
+                    showScreen(CONSTANTS.SCREENS.MODE_SELECT);
+                });
+            } else {
+                keyEl.classList.add('letter');
+                keyEl.addEventListener('click', () => {
+                    if (currentName.length < 15) {
+                        const charToAdd = (isShiftActive && key !== '@') ? key.toUpperCase() : key.toLowerCase();
+                        currentName += charToAdd;
+                        dom.nameText.textContent = currentName;
+                    }
+                });
+            }
+            dom.virtualKeyboard.appendChild(keyEl);
+        });
+
+        const updateKeyboardVisuals = () => {
+            dom.virtualKeyboard.querySelectorAll('.keyboard-key.letter').forEach(key => {
+                key.textContent = (isShiftActive && key.dataset.key !== '@') ? key.dataset.key.toUpperCase() : key.dataset.key.toLowerCase();
+            });
+            dom.virtualKeyboard.querySelector('.shift')?.classList.toggle('active', isShiftActive);
+        };
+        updateKeyboardVisuals();
+    }
+    
+    function setupProfileSelectScreen() {
+        dom.profileGrid.innerHTML = '';
+        Object.keys(playerData).forEach(name => {
+            const card = document.createElement('div'); card.className = 'profile-card'; card.dataset.name = name;
+            const data = playerData[name];
+            const medalsCalc = data.CALCULO.medals.length; const medalsVuelto = data.VUELTO.medals.length;
+            card.innerHTML = `
+                <div class="profile-name">${name}</div>
+                <dl class="profile-progress-grid">
+                    <dt>Nivel Cálculo:</dt><dd>${data.CALCULO.maxLevel -1}</dd>
+                    <dt>Nivel Vuelto:</dt><dd>${data.VUELTO.maxLevel -1}</dd>
+                    <dt>Medallas:</dt><dd>${medalsCalc + medalsVuelto}</dd>
+                </dl>
+            `;
+            card.addEventListener('click', () => { gameState.currentOperatorName = name; showScreen(CONSTANTS.SCREENS.MODE_SELECT); });
+            dom.profileGrid.appendChild(card);
+        });
+        const newProfileCard = document.createElement('div');
+        newProfileCard.className = 'profile-card new-profile'; newProfileCard.textContent = '+';
+        newProfileCard.addEventListener('click', () => showScreen(CONSTANTS.SCREENS.NAME_ENTRY));
+        dom.profileGrid.appendChild(newProfileCard);
+    }
+    
+    function setupAlbumScreen() {
+        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
+        dom.stickerGrid.innerHTML = '';
+        levelStickers.forEach((sticker, index) => {
+            const slot = document.createElement('div');
+            slot.className = 'sticker-slot';
+            slot.textContent = modeData.unlockedStickers.includes(sticker) ? sticker : `❓`;
+            if (modeData.unlockedStickers.includes(sticker)) slot.classList.add('unlocked');
+            dom.stickerGrid.appendChild(slot);
+        });
+    }
+
+    function savePlayerData() { try { localStorage.setItem(CONSTANTS.STORAGE_KEY, JSON.stringify(playerData)); } catch (e) { console.error("Failed to save player data:", e); } }
+    function loadPlayerData() { try { const data = localStorage.getItem(CONSTANTS.STORAGE_KEY); playerData = data ? JSON.parse(data) : {}; } catch (e) { console.error("Failed to load player data:", e); playerData = {}; } }
+
+    function init() {
+        document.getElementById('start-button').addEventListener('click', () => { requestFullscreen(); setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
+        setupNameEntryScreen(); setupPaymentTerminal();
+        document.getElementById('name-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
+        document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click', (e) => { gameState.currentMode = e.currentTarget.dataset.mode; setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); }));
+        document.getElementById('mode-select-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
+        document.getElementById('level-select-back-button').addEventListener('click', () => showScreen(CONSTANTS.SCREENS.MODE_SELECT));
+        document.getElementById('album-button').addEventListener('click', () => { setupAlbumScreen(); showScreen(CONSTANTS.SCREENS.ALBUM); });
+        document.getElementById('album-back-button').addEventListener('click', () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); });
+        document.getElementById('game-back-button').addEventListener('click', () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); });
+        dom.correctLastBtn.addEventListener('click', () => { const last = dom.paymentCartItems.lastElementChild; if(last) last.click(); });
+        dom.confirmPaymentBtn.addEventListener('click', initiateVerification);
+        
+        loadPlayerData();
+    }
+    
+    function setupPaymentTerminal() { 
+        dom.billDenominations.innerHTML = ''; dom.coinDenominations.innerHTML = '';
+        denominations.forEach(d => { 
+            const btn = document.createElement('div'); 
+            btn.className = `denomination-btn ${d.type}-btn`;
+            const content = d.type === 'bill' ? `<span>$${d.v}</span>` : `<span>$${d.v}</span>`;
+            btn.innerHTML = `${content}<span class="denomination-count"></span>`; 
+            btn.dataset.value = d.v; btn.dataset.type = d.type;
+            btn.addEventListener('click', () => { if (!btn.classList.contains('disabled')) addMoneyToCart(d.v, d.type); });
+            if (d.type === 'bill') dom.billDenominations.appendChild(btn);
+            else dom.coinDenominations.appendChild(btn);
+        }); 
+    }
+
+    function requestFullscreen() { if (gameState.firstInteraction) { document.documentElement.requestFullscreen().catch(err => {}); gameState.firstInteraction = false; } }
+    function handleMoneyItemClick(e) {
+        if (gameState.isVerifying) return;
+        const moneyItem = e.target.closest('.money-item'); if (!moneyItem) return;
+        const value = parseInt(moneyItem.dataset.value);
+        gameState.amountPaid -= value;
+        gameState.availableDenominations[value]++;
+        moneyItem.remove();
+        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
+    }
+    
+    init();
+});
+</script>
+</body>
+</html>
