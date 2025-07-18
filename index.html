@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Zero :: Final Polish v28.0 FINAL</title>
+    <title>Protocol Zero :: Responsive Core v32.0 FINAL</title>
     <style>
         :root {
             --bg-color: #1A202C;
@@ -40,10 +40,7 @@
         .main-button { border: none; border-radius: 50px; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.2s; background: var(--accent-color); color: var(--bg-color); text-shadow: none; border: 3px solid rgba(255,255,255,0.4); box-shadow: 0 8px 0px var(--accent-shadow); }
         .main-button:active:not(:disabled) { transform: translateY(6px) scale(0.98); box-shadow: 0 2px 0px var(--accent-shadow); }
         .main-button:disabled { background: var(--disabled-color); box-shadow: 0 8px 0px var(--disabled-shadow); cursor: not-allowed; filter: grayscale(0.5); color: #718096; }
-        
-        /* PERFECCIONAMIENTO: Estilo unificado para botones secundarios */
         .secondary-button { background: var(--border-color); color: var(--primary-text-color); box-shadow: 0 8px 0px #2D3748; }
-        .secondary-button:active:not(:disabled) { box-shadow: 0 2px 0px #2D3748; }
         
         .panel { background: var(--panel-bg-color); border: 4px solid var(--border-color); border-radius: var(--border-radius); box-shadow: 8px 8px 0px var(--shadow-color); padding: 1.5rem; width: 100%; }
         h1, h2, h3 { color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
@@ -53,7 +50,6 @@
         #name-cursor { display: inline-block; background: var(--digital-green); width: 1.2ch; height: 2.5rem; animation: blink 1s step-end infinite; }
         #virtual-keyboard { display: grid; width: 100%; max-width: 900px; gap: clamp(5px, 1vw, 10px); grid-template-columns: repeat(20, 1fr); }
         .keyboard-key { background: #4A5568; border: 2px solid #2D3748; border-radius: 8px; font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary-text-color); cursor: pointer; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; transition: all 0.1s; }
-        .keyboard-key:active { transform: scale(0.95); background-color: #718096; }
         .functional-key { background-color: #718096; aspect-ratio: auto; }
         .functional-key.shift.active { background-color: var(--accent-color); color: white; }
 
@@ -72,14 +68,7 @@
         .level-card { background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
         .level-card.locked { background: var(--disabled-color); filter: grayscale(1); cursor: not-allowed; }
         .level-card.active { border-color: var(--accent-color); animation: pulse-active-level 2s infinite; }
-        /* PERFECCIONAMIENTO: Sello de la Victoria */
-        .level-card.completed { border-color: var(--completed-color); }
-        .level-card.completed::before { content: '✅'; position: absolute; top: 10px; right: 10px; font-size: 1.5rem; }
-        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); color: var(--primary-text-color); }
-
-        #medals-display { background: rgba(0,0,0,0.2); padding: 0.5rem 1rem; border-radius: 50px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
-        .medal { font-size: 2rem; cursor: help; }
-        .medal.locked { filter: grayscale(1) brightness(0.7); }
+        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); }
 
         .action-bar { display: flex; justify-content: center; gap: 1rem; align-items: center; }
 
@@ -88,18 +77,13 @@
         #payment-area-container { width: 60%; }
         
         #cashier-info { flex: 0 0 35%; display: flex; justify-content: space-around; align-items: center; gap: 1rem; padding: 1rem; }
-        
-        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; font-family: var(--font-family-mono); box-shadow: inset 0 6px 10px -8px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.1); }
-        #list-total-display { border-top: 2px dashed var(--border-color); margin-top: auto; padding: 0.5rem; font-weight: bold; font-size: 1.3rem; display: flex; justify-content: space-between; }
-        #shopping-list-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 2px; }
-        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; cursor: pointer; transition: all 0.3s ease-out; }
-        .list-item:hover { background-color: rgba(255,255,255,0.1); }
-        .list-item.checked { color: var(--secondary-text-color); text-decoration: line-through; opacity: 0.7; transform: scale(0.98); background-color: rgba(0,0,0,0.2); }
-        
+        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
         #customer-payment-display { font-weight: bold; font-size: 1.2rem; background: var(--accent-color); color: #1A202C; padding: 0.5rem 1rem; border-radius: 10px; margin-top: 0.5rem; }
         #cashier-avatar { font-size: 5rem; line-height: 1; }
         #attempt-tracker { display: flex; gap: 0.5rem; font-size: 1.8rem; color: #E53E3E; margin-top: 0.2rem;}
-
+        #shopping-list-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 2px; }
+        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        
         #payment-terminal { height: 100%; display: flex; flex-direction: column; }
         #payment-cart-area { flex-grow: 1; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; border-style: dashed; }
         #payment-cart-items { flex-grow: 1; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px; background: #1A202C; border-radius: 8px; min-height: 100px; }
@@ -116,13 +100,8 @@
         .action-btn { width: 100%; padding: 15px 10px; border-radius: 10px; font-size: 1.2rem; text-shadow: none; border: 3px solid rgba(255,255,255,0.2); }
         #confirm-payment-btn { background: var(--success-color); box-shadow: 0 6px 0px var(--success-shadow); color: white; }
         #correct-last-btn { background: var(--warning-color); box-shadow: 0 6px 0px var(--warning-shadow); color: white; font-size: 1.8rem; padding: 10px; }
-        .action-btn:active:not(:disabled) { transform: translateY(4px) scale(0.98); }
-        #confirm-payment-btn:active:not(:disabled) { box-shadow: 0 2px 0px var(--success-shadow); }
-        #correct-last-btn:active:not(:disabled) { box-shadow: 0 2px 0px var(--warning-shadow); }
-
-
+        
         .denomination-btn { border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 6px 0px rgba(0,0,0,0.3); position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.15s; }
-        .denomination-btn:active:not(.disabled) { transform: translateY(4px) scale(0.98); box-shadow: 0 2px 0px rgba(0,0,0,0.3); }
         .denomination-btn.bill-btn { width: 100px; height: 50px; border-radius: 8px; background: #81C784; color: #1B5E20; font-size: 1.2rem; }
         .denomination-btn.coin-btn { width: 65px; height: 65px; border-radius: 50%; background: #FFB74D; color: #E65100; font-size: 1.2rem; }
         .denomination-count { position: absolute; top: -8px; right: -8px; background: #E53E3E; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--border-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
@@ -133,7 +112,21 @@
         @keyframes blink { 50% { background-color: transparent; } }
         @keyframes pulse-active-level { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 181, 216, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(0, 181, 216, 0); } }
         @keyframes pulse-verifying-text { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        @media (max-width: 1024px) { #game-layout-container { flex-direction: column; } #left-panel, #payment-area-container { width: 100%; max-height: none; } #payment-controls-container { grid-template-columns: 1fr; } }
+
+        /* REESTRUCTURACIÓN: Protocolo de Fluidez Vertical */
+        @media (max-width: 800px) {
+            #game-layout-container { flex-direction: column; }
+            #left-panel, #payment-area-container { width: 100%; max-height: 50%; }
+            #payment-controls-container { grid-template-columns: 1fr; }
+            #bill-denominations, #coin-denominations, #action-controls { margin-bottom: 1rem; }
+            #action-controls { flex-direction: row; }
+            #level-grid { grid-template-columns: repeat(3, 1fr); }
+            #mode-select-container { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            #level-grid { grid-template-columns: repeat(2, 1fr); }
+            #virtual-keyboard { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -141,9 +134,8 @@
     <div id="profile-select-screen" class="screen"><div class="top-zone"><h1>Seleccione Archivo de Operador</h1></div><div class="center-zone"><div id="profile-grid"></div></div></div>
     <div id="name-entry-screen" class="screen"><div class="top-zone"><h3>NUEVO IDENTIFICADOR DE OPERADOR</h3><div id="name-display-container" class="panel"><div id="name-display"><span id="name-text"></span><span id="name-cursor"></span></div></div></div><div class="center-zone"><div id="virtual-keyboard"></div></div><div class="bottom-zone"><button id="name-back-button" class="main-button">Volver</button></div></div>
     <div id="mode-select-screen" class="screen"><div class="top-zone"><h1 id="mode-select-title">Seleccione Protocolo</h1></div><div class="center-zone"><div id="mode-select-container"><div class="mode-card" data-mode="CALCULO"><h2>Modo Cálculo</h2><p>Paga el total exacto de la lista.</p></div><div class="mode-card" data-mode="VUELTO"><h2>Modo Vuelto</h2><p>Entrega el vuelto exacto.</p></div></div></div><div class="bottom-zone"><button id="mode-select-back-button" class="main-button">Cambiar Operador</button></div></div>
-    <div id="level-select-screen" class="screen"><div class="top-zone"><h1 id="level-select-title">Panel de Misiones</h1><div id="medals-display"></div></div><div class="center-zone"><div id="level-grid" class="panel"></div></div><div class="bottom-zone"><div class="action-bar"><button id="album-button" class="main-button secondary-button">Mi Álbum</button><button id="level-select-back-button" class="main-button">Cambiar Modo</button></div></div></div>
-    <div id="album-screen" class="screen"><div class="top-zone"><h1>Álbum de Recompensas</h1></div><div class="center-zone"><div id="sticker-grid" class="panel"></div></div><div class="bottom-zone"><button id="album-back-button" class="main-button">Volver al Panel</button></div></div>
-    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div><div id="list-total-display"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">⌫</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
+    <div id="level-select-screen" class="screen"><div class="top-zone"><h1 id="level-select-title">Panel de Misiones</h1></div><div class="center-zone"><div id="level-grid" class="panel"></div></div><div class="bottom-zone"><div class="action-bar"><button id="level-select-back-button" class="main-button">Cambiar Modo</button></div></div></div>
+    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">Quitar</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
     <div id="verifying-screen" class="screen"><div class="center-zone"><h1>Verificando...</h1></div></div>
     <div id="transition-screen" class="screen"><div class="center-zone"><h1 id="transition-title"></h1><div id="transition-details"></div><div id="transition-button-container" style="margin-top:2rem; display:flex; gap:1rem; justify-content:center;"></div></div></div>
 
@@ -151,19 +143,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const CONSTANTS = {
-        SCREENS: { TITLE: 'title-screen', PROFILE_SELECT: 'profile-select-screen', NAME_ENTRY: 'name-entry-screen', MODE_SELECT: 'mode-select-screen', LEVEL_SELECT: 'level-select-screen', ALBUM: 'album-screen', GAME: 'game-screen', VERIFYING: 'verifying-screen', TRANSITION: 'transition-screen' },
-        STORAGE_KEY: 'OPERATOR_PROFILES_V27',
+        SCREENS: { TITLE: 'title-screen', PROFILE_SELECT: 'profile-select-screen', NAME_ENTRY: 'name-entry-screen', MODE_SELECT: 'mode-select-screen', LEVEL_SELECT: 'level-select-screen', GAME: 'game-screen', VERIFYING: 'verifying-screen', TRANSITION: 'transition-screen' },
+        STORAGE_KEY: 'OPERATOR_PROFILES_V32',
         MAX_LEVELS: 10, PURCHASES_PER_LEVEL: 5, MAX_ATTEMPTS: 3
     };
     let playerData = {};
     const gameState = { currentOperatorName: '', currentMode: 'CALCULO', currentLevel: 0, successfulPurchases: 0, levelErrors: 0, shoppingList: [], targetTotal: 0, customerPayment: 0, amountPaid: 0, isVerifying: false, firstInteraction: true, attemptCount: 0 };
     
-    const MEDALS = {
-        PRECISION: { id: 'precision', emoji: '🥇', title: 'Medalla de Precisión: Completa un nivel sin errores.'},
-        PERFECTION: { id: 'perfection', emoji: '🏆', title: 'Medalla de Perfección: Completa todos los niveles en un modo.'}
-    };
-    const levelStickers = ['🍏', '🍞', '🥛', '🥚', '🍗', '🐟', '🍾', '🧸', '📓', '🔋'];
-
     const LEVEL_CONFIG = [
         { minItems: 2, maxItems: 3, minPrice: 5, maxPrice: 20, drawer: 'easy' }, { minItems: 3, maxItems: 4, minPrice: 10, maxPrice: 30, drawer: 'easy' },
         { minItems: 3, maxItems: 5, minPrice: 20, maxPrice: 50, drawer: 'medium' }, { minItems: 4, maxItems: 5, minPrice: 30, maxPrice: 70, drawer: 'medium' },
@@ -177,23 +163,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const dom = { 
         nameText: document.getElementById('name-text'), virtualKeyboard: document.getElementById('virtual-keyboard'),
         profileGrid: document.getElementById('profile-grid'),
-        levelGrid: document.getElementById('level-grid'), levelSelectTitle: document.getElementById('level-select-title'), medalsDisplay: document.getElementById('medals-display'),
+        levelGrid: document.getElementById('level-grid'), levelSelectTitle: document.getElementById('level-select-title'),
         cashierAvatar: document.getElementById('cashier-avatar'), cashierName: document.getElementById('cashier-name'), 
         customerPaymentDisplay: document.getElementById('customer-payment-display'),
         attemptTracker: document.getElementById('attempt-tracker'), purchaseProgressTracker: document.getElementById('purchase-progress-tracker'), gameLevelTitle: document.getElementById('game-level-title'), 
-        shoppingListItems: document.getElementById('shopping-list-items'), listTotalDisplay: document.getElementById('list-total-display'),
+        shoppingListItems: document.getElementById('shopping-list-items'), 
         billDenominations: document.getElementById('bill-denominations'), coinDenominations: document.getElementById('coin-denominations'),
         paymentTerminalTitle: document.getElementById('payment-terminal-title'), paymentTotalLabel: document.getElementById('payment-total-label'),
         paymentCartItems: document.getElementById('payment-cart-items'), paymentTotalDisplay: document.getElementById('payment-total-display'), 
         correctLastBtn: document.getElementById('correct-last-btn'), confirmPaymentBtn: document.getElementById('confirm-payment-btn'), 
         transitionTitle: document.getElementById('transition-title'), transitionDetails: document.getElementById('transition-details'), transitionButtonContainer: document.getElementById('transition-button-container'), 
-        stickerGrid: document.getElementById('sticker-grid'),
     };
-    
+
     function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
     function formatCurrency(amount) { return `$${amount.toFixed(2)}`; }
     
     function startNewPurchase(level) {
+        if (gameState.successfulPurchases === 0) gameState.levelStartTime = Date.now();
         gameState.currentLevel = level;
         const config = LEVEL_CONFIG[level - 1];
         const numItems = Math.floor(Math.random() * (config.maxItems - config.minItems + 1)) + config.minItems;
@@ -216,15 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupGameUI() {
         dom.gameLevelTitle.textContent = `${gameState.currentMode === 'VUELTO' ? 'Vuelto' : 'Cálculo'} - Nivel ${gameState.currentLevel}`;
+        dom.paymentCartItems.innerHTML = '';
         dom.shoppingListItems.innerHTML = '';
         gameState.shoppingList.forEach(item => {
             const listItem = document.createElement('div'); listItem.className = 'list-item';
             listItem.innerHTML = `<span>${item.emoji}</span><span class="list-item-price">${formatCurrency(item.price)}</span>`;
-            listItem.addEventListener('click', () => listItem.classList.toggle('checked'));
             dom.shoppingListItems.appendChild(listItem);
         });
-        dom.listTotalDisplay.innerHTML = `<span>TOTAL:</span><span>${formatCurrency(gameState.targetTotal)}</span>`;
-        dom.paymentCartItems.innerHTML = '';
         if(gameState.currentMode === 'VUELTO'){
             dom.customerPaymentDisplay.textContent = `Cliente Paga: ${formatCurrency(gameState.customerPayment)}`;
             dom.customerPaymentDisplay.style.display = 'block';
@@ -272,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showPurchaseTransition(isCorrect) {
         dom.transitionButtonContainer.innerHTML = '';
+        dom.transitionDetails.innerHTML = '';
         const isLevelComplete = gameState.successfulPurchases >= CONSTANTS.PURCHASES_PER_LEVEL;
 
         if (isCorrect) {
@@ -300,20 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleLevelComplete() {
         const charData = playerData[gameState.currentOperatorName];
         const modeData = charData[gameState.currentMode];
-        let newlyAwardedMedal = null;
-        
-        const newSticker = levelStickers[gameState.currentLevel - 1];
-        if (!modeData.unlockedStickers.includes(newSticker)) modeData.unlockedStickers.push(newSticker);
-
-        if (gameState.levelErrors === 0) newlyAwardedMedal = awardMedal(MEDALS.PRECISION.id);
-        
         if (gameState.currentLevel === modeData.maxLevel) modeData.maxLevel++;
-        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) newlyAwardedMedal = awardMedal(MEDALS.PERFECTION.id) || newlyAwardedMedal;
+        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) modeData.hasMastery = true;
         savePlayerData();
-
         dom.transitionTitle.textContent = `🎉 ¡NIVEL ${gameState.currentLevel} COMPLETADO! 🎉`;
-        dom.transitionDetails.innerHTML = newlyAwardedMedal ? `<h3>🏆 MEDALLA DESBLOQUEADA 🏆</h3><p>${newlyAwardedMedal.title}</p>` : `<p>Sticker de Nivel Obtenido: <span style="font-size: 2rem; vertical-align: middle;">${newSticker}</span></p>`;
-        
         const nextButton = document.createElement('button'); nextButton.className = 'main-button';
         nextButton.textContent = 'Volver al Panel';
         nextButton.onclick = () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); };
@@ -322,27 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen(CONSTANTS.SCREENS.TRANSITION);
     }
 
-    function awardMedal(medalId) {
-        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
-        if (!modeData.medals.includes(medalId)) {
-            modeData.medals.push(medalId);
-            return MEDALS[medalId.toUpperCase()];
-        }
-        return null;
-    }
-
     function setupLevelSelectScreen() {
         dom.levelSelectTitle.innerHTML = `Operador: <span style="color:var(--accent-color);">${gameState.currentOperatorName}</span> - Modo ${gameState.currentMode}`;
         const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
-        dom.medalsDisplay.innerHTML = '';
-        Object.values(MEDALS).forEach(medal => {
-            const hasMedal = modeData.medals.includes(medal.id);
-            const medalEl = document.createElement('span');
-            medalEl.className = `medal ${hasMedal ? 'unlocked' : 'locked'}`;
-            medalEl.textContent = medal.emoji;
-            medalEl.title = medal.title;
-            dom.medalsDisplay.appendChild(medalEl);
-        });
 
         dom.levelGrid.innerHTML = '';
         for (let i = 1; i <= CONSTANTS.MAX_LEVELS; i++) {
@@ -402,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentName.trim().length === 0) return;
                     gameState.currentOperatorName = currentName.trim();
                     if (!playerData[gameState.currentOperatorName]) {
-                        playerData[gameState.currentOperatorName] = { CALCULO: { maxLevel: 1, medals: [], unlockedStickers:[] }, VUELTO: { maxLevel: 1, medals: [], unlockedStickers:[] } };
+                        playerData[gameState.currentOperatorName] = { CALCULO: { maxLevel: 1, records: {} }, VUELTO: { maxLevel: 1, records: {} } };
                         savePlayerData();
                     }
                     showScreen(CONSTANTS.SCREENS.MODE_SELECT);
@@ -434,13 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(playerData).forEach(name => {
             const card = document.createElement('div'); card.className = 'profile-card'; card.dataset.name = name;
             const data = playerData[name];
-            const medalsCalc = data.CALCULO.medals.length; const medalsVuelto = data.VUELTO.medals.length;
             card.innerHTML = `
                 <div class="profile-name">${name}</div>
                 <dl class="profile-progress-grid">
                     <dt>Nivel Cálculo:</dt><dd>${data.CALCULO.maxLevel -1}</dd>
                     <dt>Nivel Vuelto:</dt><dd>${data.VUELTO.maxLevel -1}</dd>
-                    <dt>Medallas:</dt><dd>${medalsCalc + medalsVuelto}</dd>
                 </dl>
             `;
             card.addEventListener('click', () => { gameState.currentOperatorName = name; showScreen(CONSTANTS.SCREENS.MODE_SELECT); });
@@ -451,22 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
         newProfileCard.addEventListener('click', () => showScreen(CONSTANTS.SCREENS.NAME_ENTRY));
         dom.profileGrid.appendChild(newProfileCard);
     }
-
-    function setupAlbumScreen() {
-        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
-        dom.stickerGrid.innerHTML = '';
-        levelStickers.forEach((sticker, index) => {
-            const slot = document.createElement('div');
-            slot.className = 'sticker-slot';
-            const levelNum = index + 1;
-            slot.textContent = modeData.unlockedStickers.includes(sticker) ? sticker : `${levelNum}`;
-            if (modeData.unlockedStickers.includes(sticker)) slot.classList.add('unlocked');
-            dom.stickerGrid.appendChild(slot);
-        });
-    }
-
-    function savePlayerData() { try { localStorage.setItem(CONSTANTS.STORAGE_KEY, JSON.stringify(playerData)); } catch (e) { console.error("Failed to save player data:", e); } }
-    function loadPlayerData() { try { const data = localStorage.getItem(CONSTANTS.STORAGE_KEY); playerData = data ? JSON.parse(data) : {}; } catch (e) { console.error("Failed to load player data:", e); playerData = {}; } }
+    
+    function savePlayerData() { try { localStorage.setItem(CONSTANTS.STORAGE_KEY, JSON.stringify(playerData)); } catch (e) {} }
+    function loadPlayerData() { try { const data = localStorage.getItem(CONSTANTS.STORAGE_KEY); playerData = data ? JSON.parse(data) : {}; } catch (e) { playerData = {}; } }
 
     function init() {
         document.getElementById('start-button').addEventListener('click', () => { requestFullscreen(); setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
@@ -474,8 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click', (e) => { gameState.currentMode = e.currentTarget.dataset.mode; setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); }));
         document.getElementById('mode-select-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
         document.getElementById('level-select-back-button').addEventListener('click', () => showScreen(CONSTANTS.SCREENS.MODE_SELECT));
-        document.getElementById('album-button').addEventListener('click', () => { setupAlbumScreen(); showScreen(CONSTANTS.SCREENS.ALBUM); });
-        document.getElementById('album-back-button').addEventListener('click', () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); });
         document.getElementById('game-back-button').addEventListener('click', () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); });
         dom.correctLastBtn.addEventListener('click', () => { const last = dom.paymentCartItems.lastElementChild; if(last) last.click(); });
         dom.confirmPaymentBtn.addEventListener('click', initiateVerification);
@@ -489,8 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         denominations.forEach(d => { 
             const btn = document.createElement('div'); 
             btn.className = `denomination-btn ${d.type}-btn`;
-            const content = d.type === 'bill' ? `<span>$${d.v}</span>` : `<span>$${d.v}</span>`;
-            btn.innerHTML = `${content}<span class="denomination-count"></span>`; 
+            btn.innerHTML = `<span>$${d.v}</span><span class="denomination-count"></span>`; 
             btn.dataset.value = d.v; btn.dataset.type = d.type;
             btn.addEventListener('click', () => { if (!btn.classList.contains('disabled')) addMoneyToCart(d.v, d.type); });
             if (d.type === 'bill') dom.billDenominations.appendChild(btn);
