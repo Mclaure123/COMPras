@@ -1,455 +1,553 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Zero :: Responsive Core v32.0 FINAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ahorro Inteligente V1.5</title>
+    
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
     <style>
+        /* ==========================================
+           VARIABLES Y TEMA OSCURO/CLARO
+           ========================================== */
         :root {
-            --bg-color: #1A202C;
-            --panel-bg-color: #2D3748;
-            --primary-text-color: #E2E8F0;
-            --secondary-text-color: #A0AEC0;
-            --accent-color: #00B5D8;
-            --accent-shadow: #00A3C4;
-            --border-color: #4A5568;
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --disabled-color: #4A5568;
-            --disabled-shadow: #2D3748;
-            --completed-color: #FFD700;
-            --success-color: #48BB78;
-            --success-shadow: #38A169;
-            --warning-color: #F6AD55;
-            --warning-shadow: #ED8936;
-            --digital-green: #39FF14;
-            --digital-bg: #111827;
-            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            --font-family-mono: 'Courier New', monospace;
-            --border-radius: 20px;
+            --bg-color: #f0f4f8;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --primary-color: #3182ce;
+            --primary-hover: #2b6cb0;
+            --success-color: #38a169;
+            --danger-color: #e53e3e;
+            --warning-color: #dd6b20;
+            --nav-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --modal-bg: rgba(0,0,0,0.5);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: var(--font-family); background-color: var(--bg-color); color: var(--primary-text-color); }
-        .screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 3vh 3vw; position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0.4s; text-align: center; }
-        .screen.active { opacity: 1; visibility: visible; }
-        .top-zone { width: 100%; text-align: center; flex-shrink: 0; padding-bottom: 2vh; }
-        .center-zone { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; min-height: 0; }
-        .bottom-zone { width: 100%; text-align: center; flex-shrink: 0; padding-top: 2vh; }
-
-        .main-button { border: none; border-radius: 50px; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.2s; background: var(--accent-color); color: var(--bg-color); text-shadow: none; border: 3px solid rgba(255,255,255,0.4); box-shadow: 0 8px 0px var(--accent-shadow); }
-        .main-button:active:not(:disabled) { transform: translateY(6px) scale(0.98); box-shadow: 0 2px 0px var(--accent-shadow); }
-        .main-button:disabled { background: var(--disabled-color); box-shadow: 0 8px 0px var(--disabled-shadow); cursor: not-allowed; filter: grayscale(0.5); color: #718096; }
-        .secondary-button { background: var(--border-color); color: var(--primary-text-color); box-shadow: 0 8px 0px #2D3748; }
-        
-        .panel { background: var(--panel-bg-color); border: 4px solid var(--border-color); border-radius: var(--border-radius); box-shadow: 8px 8px 0px var(--shadow-color); padding: 1.5rem; width: 100%; }
-        h1, h2, h3 { color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
-        
-        #name-display-container { width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
-        #name-display { background: var(--digital-bg); color: var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 1rem; border-radius: 10px; text-align: left; height: 80px; display: flex; align-items: center; }
-        #name-cursor { display: inline-block; background: var(--digital-green); width: 1.2ch; height: 2.5rem; animation: blink 1s step-end infinite; }
-        #virtual-keyboard { display: grid; width: 100%; max-width: 900px; gap: clamp(5px, 1vw, 10px); grid-template-columns: repeat(20, 1fr); }
-        .keyboard-key { background: #4A5568; border: 2px solid #2D3748; border-radius: 8px; font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary-text-color); cursor: pointer; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; transition: all 0.1s; }
-        .functional-key { background-color: #718096; aspect-ratio: auto; }
-        .functional-key.shift.active { background-color: var(--accent-color); color: white; }
-
-        #profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; max-width: 900px; width: 100%; }
-        .profile-card { background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
-        .profile-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); border-color: var(--accent-color); }
-        .profile-name { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); border-bottom: 2px dashed var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
-        .profile-card.new-profile { border-style: dashed; display: flex; justify-content: center; align-items: center; font-size: 5rem; color: var(--border-color); }
-
-        #mode-select-container { display: flex; gap: 2rem; justify-content: center; width: 100%; max-width: 800px; }
-        .mode-card { flex: 1; background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); padding: 2rem; cursor: pointer; transition: all 0.2s; }
-        .mode-card:hover { transform: translateY(-10px); box-shadow: 0 12px 0px var(--shadow-color); border-color: var(--accent-color); }
-        .mode-card h2 { font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem; }
-        
-        #level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; max-width: 900px; width: 100%; }
-        .level-card { background: #4A5568; border: 4px solid var(--border-color); border-radius: var(--border-radius); aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
-        .level-card.locked { background: var(--disabled-color); filter: grayscale(1); cursor: not-allowed; }
-        .level-card.active { border-color: var(--accent-color); animation: pulse-active-level 2s infinite; }
-        .level-number { font-size: clamp(1.5rem, 8vw, 2.5rem); }
-
-        .action-bar { display: flex; justify-content: center; gap: 1rem; align-items: center; }
-
-        #game-layout-container { display: flex; width: 100%; max-width: 1400px; margin: 0 auto; gap: 2vw; flex-grow: 1; min-height: 0; }
-        #left-panel { width: 40%; display: flex; flex-direction: column; gap: 1.5rem; }
-        #payment-area-container { width: 60%; }
-        
-        #cashier-info { flex: 0 0 35%; display: flex; justify-content: space-around; align-items: center; gap: 1rem; padding: 1rem; }
-        #shopping-list-area { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-        #customer-payment-display { font-weight: bold; font-size: 1.2rem; background: var(--accent-color); color: #1A202C; padding: 0.5rem 1rem; border-radius: 10px; margin-top: 0.5rem; }
-        #cashier-avatar { font-size: 5rem; line-height: 1; }
-        #attempt-tracker { display: flex; gap: 0.5rem; font-size: 1.8rem; color: #E53E3E; margin-top: 0.2rem;}
-        #shopping-list-items { flex-grow: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 2px; }
-        .list-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
-        
-        #payment-terminal { height: 100%; display: flex; flex-direction: column; }
-        #payment-cart-area { flex-grow: 1; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; border-style: dashed; }
-        #payment-cart-items { flex-grow: 1; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px; background: #1A202C; border-radius: 8px; min-height: 100px; }
-        #payment-total-display { width: 100%; background-color: var(--digital-bg); color: var(--digital-green); text-shadow: 0 0 5px var(--digital-green); font-family: var(--font-family-mono); font-size: clamp(1.5rem, 5vw, 2.5rem); padding: 0.5rem; border-radius: 8px; text-align: right; }
-
-        .money-item { animation: pop-in 0.2s ease-out; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
-        .money-item.bill { width: 70px; height: 35px; border-radius: 5px; background: #C8E6C9; color: #1B5E20; border: 2px solid #66BB6A; font-size: 1.8rem; }
-        .money-item.coin { width: 45px; height: 45px; border-radius: 50%; padding: 0; background: #FFB74D; color: #E65100; font-size: 1rem; }
-        
-        #payment-controls-container { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 1rem; align-items: start; }
-        #bill-denominations { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
-        #coin-denominations { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-        #action-controls { display: flex; flex-direction: column; gap: 1rem; height: 100%; justify-content: space-between; }
-        .action-btn { width: 100%; padding: 15px 10px; border-radius: 10px; font-size: 1.2rem; text-shadow: none; border: 3px solid rgba(255,255,255,0.2); }
-        #confirm-payment-btn { background: var(--success-color); box-shadow: 0 6px 0px var(--success-shadow); color: white; }
-        #correct-last-btn { background: var(--warning-color); box-shadow: 0 6px 0px var(--warning-shadow); color: white; font-size: 1.8rem; padding: 10px; }
-        
-        .denomination-btn { border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 6px 0px rgba(0,0,0,0.3); position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; transition: all 0.15s; }
-        .denomination-btn.bill-btn { width: 100px; height: 50px; border-radius: 8px; background: #81C784; color: #1B5E20; font-size: 1.2rem; }
-        .denomination-btn.coin-btn { width: 65px; height: 65px; border-radius: 50%; background: #FFB74D; color: #E65100; font-size: 1.2rem; }
-        .denomination-count { position: absolute; top: -8px; right: -8px; background: #E53E3E; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--border-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        .denomination-btn.disabled { background: var(--disabled-color); box-shadow: 0 6px 0px var(--disabled-shadow); cursor: not-allowed; filter: grayscale(0.5); color: #718096; }
-
-        #verifying-screen h1 { animation: pulse-verifying-text 1.5s infinite; }
-        
-        @keyframes blink { 50% { background-color: transparent; } }
-        @keyframes pulse-active-level { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 181, 216, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(0, 181, 216, 0); } }
-        @keyframes pulse-verifying-text { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-        /* REESTRUCTURACIÓN: Protocolo de Fluidez Vertical */
-        @media (max-width: 800px) {
-            #game-layout-container { flex-direction: column; }
-            #left-panel, #payment-area-container { width: 100%; max-height: 50%; }
-            #payment-controls-container { grid-template-columns: 1fr; }
-            #bill-denominations, #coin-denominations, #action-controls { margin-bottom: 1rem; }
-            #action-controls { flex-direction: row; }
-            #level-grid { grid-template-columns: repeat(3, 1fr); }
-            #mode-select-container { flex-direction: column; }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a202c;
+                --text-color: #e2e8f0;
+                --card-bg: #2d3748;
+                --primary-color: #4299e1;
+                --primary-hover: #3182ce;
+                --success-color: #48bb78;
+                --danger-color: #fc8181;
+                --warning-color: #f6ad55;
+                --nav-bg: #2d3748;
+                --border-color: #4a5568;
+                --modal-bg: rgba(0,0,0,0.7);
+            }
         }
-        @media (max-width: 480px) {
-            #level-grid { grid-template-columns: repeat(2, 1fr); }
-            #virtual-keyboard { max-width: 100%; }
-        }
+
+        /* ==========================================
+           ESTILOS GLOBALES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 80px; transition: background-color 0.3s; }
+        main { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .vista { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .vista.activa { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==========================================
+           ESTILOS COMPARTIDOS
+           ========================================== */
+        .card { background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-md); margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95em; opacity: 0.9; }
+        input, select, button { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-color); color: var(--text-color); font-size: 16px; }
+        .input-busqueda { margin-bottom: 15px; border: 2px solid var(--primary-color); background: var(--card-bg); }
+        
+        button { background-color: var(--primary-color); color: white; border: none; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-sm); }
+        button:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-info { background-color: #4299e1; }
+        .btn-upload { display: block; text-align: center; background-color: var(--warning-color); color: white; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: var(--shadow-sm); }
+
+        .scan-container { display: flex; gap: 10px; }
+        .scan-container input { flex: 1; }
+        .scan-container button { width: auto; background-color: var(--success-color); }
+
+        #reader { width: 100%; margin-top: 10px; border-radius: 8px; overflow: hidden; border: 2px dashed var(--primary-color); }
+        .mensaje-toast { display: none; background: var(--success-color); color: white; text-align: center; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; position: sticky; top: 10px; z-index: 3000;}
+        .error-texto { color: var(--danger-color); font-size: 0.85em; display: none; margin-top: 5px; font-weight: 500; }
+
+        /* ==========================================
+           MATRIZ
+           ========================================== */
+        .matriz-container { width: 100%; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-md); }
+        .matriz-container::-webkit-scrollbar { display: none; }
+        .matriz-tabla { border-collapse: collapse; width: max-content; min-width: 100%; }
+        .matriz-tabla th, .matriz-tabla td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: center; font-size: 0.9em; white-space: nowrap; }
+        .matriz-tabla th:first-child, .matriz-tabla td:first-child { position: sticky; left: 0; background-color: var(--card-bg); z-index: 2; text-align: left; box-shadow: 2px 0 5px rgba(0,0,0,0.05); font-weight: bold; }
+        .matriz-tabla th { background-color: var(--nav-bg); z-index: 3; cursor: pointer; transition: background 0.2s;}
+        .matriz-tabla th:hover { background-color: rgba(49, 130, 206, 0.1); }
+        .matriz-tabla th:first-child { z-index: 4; cursor: default; background-color: var(--nav-bg); }
+        
+        .celda-precio { cursor: pointer; transition: background 0.2s; }
+        .celda-precio:hover { background-color: rgba(49, 130, 206, 0.1); }
+        .tendencia-sube { color: var(--danger-color); font-weight: bold; }
+        .tendencia-baja { color: var(--success-color); font-weight: bold; }
+        .tendencia-igual { color: gray; }
+
+        /* ==========================================
+           MODAL DE HISTORIAL
+           ========================================== */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-md); max-height: 80vh; overflow-y: auto; }
+        .historial-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .lugar-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .badge-ahorro { background: rgba(56, 161, 105, 0.15); color: var(--success-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-top: 5px; border: 1px solid var(--success-color); }
+
+        /* ==========================================
+           MENÚ INFERIOR
+           ========================================== */
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 1000; }
+        .nav-btn { background: transparent; box-shadow: none; color: var(--text-color); border: none; font-size: 0.75em; display: flex; flex-direction: column; align-items: center; opacity: 0.5; padding: 5px; width: 25%; }
+        .nav-btn.activo { opacity: 1; color: var(--primary-color); }
+        .nav-icon { font-size: 1.6em; margin-bottom: 4px; }
     </style>
 </head>
 <body>
-    <div id="title-screen" class="screen active"><div class="center-zone"><h1>La Tiendita</h1><button id="start-button" class="main-button" style="margin-top: 2rem;">Iniciar Sistema</button></div></div>
-    <div id="profile-select-screen" class="screen"><div class="top-zone"><h1>Seleccione Archivo de Operador</h1></div><div class="center-zone"><div id="profile-grid"></div></div></div>
-    <div id="name-entry-screen" class="screen"><div class="top-zone"><h3>NUEVO IDENTIFICADOR DE OPERADOR</h3><div id="name-display-container" class="panel"><div id="name-display"><span id="name-text"></span><span id="name-cursor"></span></div></div></div><div class="center-zone"><div id="virtual-keyboard"></div></div><div class="bottom-zone"><button id="name-back-button" class="main-button">Volver</button></div></div>
-    <div id="mode-select-screen" class="screen"><div class="top-zone"><h1 id="mode-select-title">Seleccione Protocolo</h1></div><div class="center-zone"><div id="mode-select-container"><div class="mode-card" data-mode="CALCULO"><h2>Modo Cálculo</h2><p>Paga el total exacto de la lista.</p></div><div class="mode-card" data-mode="VUELTO"><h2>Modo Vuelto</h2><p>Entrega el vuelto exacto.</p></div></div></div><div class="bottom-zone"><button id="mode-select-back-button" class="main-button">Cambiar Operador</button></div></div>
-    <div id="level-select-screen" class="screen"><div class="top-zone"><h1 id="level-select-title">Panel de Misiones</h1></div><div class="center-zone"><div id="level-grid" class="panel"></div></div><div class="bottom-zone"><div class="action-bar"><button id="level-select-back-button" class="main-button">Cambiar Modo</button></div></div></div>
-    <div id="game-screen" class="screen"><div class="top-zone" style="padding-bottom: 0;"><h2 id="game-level-title"></h2></div><div class="center-zone" style="padding: 1vh 0;"><div id="game-layout-container"><div id="left-panel"><div id="cashier-info" class="panel"><div id="cashier-identity"><div id="cashier-avatar"></div><h3 id="cashier-name"></h3><div id="customer-payment-display" style="display:none;"></div></div><div id="game-status-panel"><h4>Progreso</h4><div id="purchase-progress-tracker"></div><h4>Intentos</h4><div id="attempt-tracker"></div></div></div><div id="shopping-list-area" class="panel"><h3>Lista de la Compra</h3><div id="shopping-list-items"></div></div></div><div id="payment-area-container"><div id="payment-terminal" class="panel"><h3 id="payment-terminal-title">Terminal de Pago</h3><div id="payment-cart-area"><div id="payment-cart-items"></div><div id="payment-total-container"><span id="payment-total-label" class="total-label">Total Pagado</span><div id="payment-total-display"></div></div></div><div id="payment-controls-container"><div id="bill-denominations"></div><div id="coin-denominations"></div><div id="action-controls"><button id="correct-last-btn" class="main-button action-btn">Quitar</button><button id="confirm-payment-btn" class="main-button action-btn">Pagar</button></div></div></div></div></div></div><div class="bottom-zone" style="padding-top:1vh;"><button id="game-back-button" class="main-button secondary-button">Salir al Panel</button></div></div>
-    <div id="verifying-screen" class="screen"><div class="center-zone"><h1>Verificando...</h1></div></div>
-    <div id="transition-screen" class="screen"><div class="center-zone"><h1 id="transition-title"></h1><div id="transition-details"></div><div id="transition-button-container" style="margin-top:2rem; display:flex; gap:1rem; justify-content:center;"></div></div></div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+    <main>
+        <div id="mensaje-exito" class="mensaje-toast">¡Acción exitosa!</div>
 
-    const CONSTANTS = {
-        SCREENS: { TITLE: 'title-screen', PROFILE_SELECT: 'profile-select-screen', NAME_ENTRY: 'name-entry-screen', MODE_SELECT: 'mode-select-screen', LEVEL_SELECT: 'level-select-screen', GAME: 'game-screen', VERIFYING: 'verifying-screen', TRANSITION: 'transition-screen' },
-        STORAGE_KEY: 'OPERATOR_PROFILES_V32',
-        MAX_LEVELS: 10, PURCHASES_PER_LEVEL: 5, MAX_ATTEMPTS: 3
-    };
-    let playerData = {};
-    const gameState = { currentOperatorName: '', currentMode: 'CALCULO', currentLevel: 0, successfulPurchases: 0, levelErrors: 0, shoppingList: [], targetTotal: 0, customerPayment: 0, amountPaid: 0, isVerifying: false, firstInteraction: true, attemptCount: 0 };
-    
-    const LEVEL_CONFIG = [
-        { minItems: 2, maxItems: 3, minPrice: 5, maxPrice: 20, drawer: 'easy' }, { minItems: 3, maxItems: 4, minPrice: 10, maxPrice: 30, drawer: 'easy' },
-        { minItems: 3, maxItems: 5, minPrice: 20, maxPrice: 50, drawer: 'medium' }, { minItems: 4, maxItems: 5, minPrice: 30, maxPrice: 70, drawer: 'medium' },
-        { minItems: 5, maxItems: 7, minPrice: 50, maxPrice: 100, drawer: 'medium' }, { minItems: 5, maxItems: 7, minPrice: 70, maxPrice: 150, drawer: 'medium' },
-        { minItems: 6, maxItems: 8, minPrice: 100, maxPrice: 250, drawer: 'hard' }, { minItems: 7, maxItems: 9, minPrice: 150, maxPrice: 300, drawer: 'hard' },
-        { minItems: 8, maxItems: 10, minPrice: 200, maxPrice: 400, drawer: 'hard' }, { minItems: 8, maxItems: 10, minPrice: 250, maxPrice: 500, drawer: 'hard' }
-    ];
-    const denominations = [ {v: 200, e: '💵', type: 'bill'}, {v: 100, e: '💵', type: 'bill'}, {v: 50, e: '💵', type: 'bill'}, {v: 20, e: '💵', type: 'bill'}, {v: 10, e: '💵', type: 'bill'}, {v: 5, e: '🪙', type: 'coin'}, {v: 2, e: '🪙', type: 'coin'}, {v: 1, e: '🪙', type: 'coin'} ];
-    const cashDrawerContents = { easy: { 50: 1, 20: 2, 10: 4, 5: 2, 2: 2, 1: 3 }, medium: { 100: 1, 50: 1, 20: 2, 10: 3, 5: 2, 2: 2, 1: 2 }, hard: { 200: 2, 100: 1, 50: 1, 20: 1, 10: 2, 5: 1, 2: 2, 1: 2 } };
+        <section id="vista-ingreso" class="vista activa">
+            <h2 style="margin-bottom: 20px;">Añadir Registro</h2>
+            <div class="card">
+                <form id="form-producto" novalidate>
+                    <div class="form-group">
+                        <label for="input-codigo">📷 Código de Barras (Escanea Primero)</label>
+                        <div class="scan-container">
+                            <input type="text" id="input-codigo" placeholder="Ej. 777123456789">
+                            <button type="button" id="btn-escanear">Escanear</button>
+                        </div>
+                        <div id="reader" style="display:none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="select-producto">🛒 Nombre del Producto *</label>
+                        <select id="select-producto" required></select>
+                        <input type="text" id="input-nuevo-producto" placeholder="Nombre del nuevo producto" style="display:none; margin-top:10px;">
+                        <div id="error-producto" class="error-texto">El nombre es obligatorio.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="select-lugar">🏪 Lugar de Compra *</label>
+                        <select id="select-lugar" required></select>
+                        <input type="text" id="input-nuevo-lugar" placeholder="Nombre del nuevo lugar" style="display:none; margin-top:10px;">
+                        <div id="error-lugar" class="error-texto">Seleccione o ingrese un lugar.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-precio">💰 Precio (Bs.) *</label>
+                        <input type="number" id="input-precio" placeholder="0.00" step="0.01" min="0.01" required>
+                        <div id="error-precio" class="error-texto">Ingrese un precio válido.</div>
+                    </div>
+                    <button type="submit" id="btn-guardar">💾 Guardar Precio</button>
+                </form>
+            </div>
+        </section>
 
-    const dom = { 
-        nameText: document.getElementById('name-text'), virtualKeyboard: document.getElementById('virtual-keyboard'),
-        profileGrid: document.getElementById('profile-grid'),
-        levelGrid: document.getElementById('level-grid'), levelSelectTitle: document.getElementById('level-select-title'),
-        cashierAvatar: document.getElementById('cashier-avatar'), cashierName: document.getElementById('cashier-name'), 
-        customerPaymentDisplay: document.getElementById('customer-payment-display'),
-        attemptTracker: document.getElementById('attempt-tracker'), purchaseProgressTracker: document.getElementById('purchase-progress-tracker'), gameLevelTitle: document.getElementById('game-level-title'), 
-        shoppingListItems: document.getElementById('shopping-list-items'), 
-        billDenominations: document.getElementById('bill-denominations'), coinDenominations: document.getElementById('coin-denominations'),
-        paymentTerminalTitle: document.getElementById('payment-terminal-title'), paymentTotalLabel: document.getElementById('payment-total-label'),
-        paymentCartItems: document.getElementById('payment-cart-items'), paymentTotalDisplay: document.getElementById('payment-total-display'), 
-        correctLastBtn: document.getElementById('correct-last-btn'), confirmPaymentBtn: document.getElementById('confirm-payment-btn'), 
-        transitionTitle: document.getElementById('transition-title'), transitionDetails: document.getElementById('transition-details'), transitionButtonContainer: document.getElementById('transition-button-container'), 
-    };
+        <section id="vista-dashboard" class="vista">
+            <h2 style="margin-bottom: 20px;">Mi Ahorro</h2>
+            
+            <input type="text" id="input-busqueda-dash" class="input-busqueda" placeholder="🔍 Buscar en movimientos..." oninput="renderizarDashboard()">
 
-    function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
-    function formatCurrency(amount) { return `$${amount.toFixed(2)}`; }
-    
-    function startNewPurchase(level) {
-        if (gameState.successfulPurchases === 0) gameState.levelStartTime = Date.now();
-        gameState.currentLevel = level;
-        const config = LEVEL_CONFIG[level - 1];
-        const numItems = Math.floor(Math.random() * (config.maxItems - config.minItems + 1)) + config.minItems;
-        const shuffledPool = [..."🍏🍞🥛🥚🍗🐟🍾🧸📓🔋🥤🧀"].sort(() => 0.5 - Math.random());
-        gameState.shoppingList = [];
-        let calculatedTotal = 0;
-        for(let i = 0; i < numItems; i++) {
-            const item = { emoji: shuffledPool[i], price: Math.floor(Math.random() * (config.maxPrice - config.minPrice + 1)) + config.minPrice };
-            calculatedTotal += item.price; gameState.shoppingList.push(item);
-        }
-        gameState.targetTotal = calculatedTotal;
-        gameState.amountPaid = 0; gameState.attemptCount = 0;
-        gameState.availableDenominations = { ...cashDrawerContents[config.drawer] };
-        if (gameState.currentMode === 'VUELTO') {
-            const paymentOptions = [10, 20, 50, 100, 200, 500, 1000].filter(p => p > gameState.targetTotal);
-            gameState.customerPayment = paymentOptions.length > 0 ? paymentOptions[0] : gameState.targetTotal + 50;
-        }
-        setupGameUI();
-    }
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="card" style="text-align: center; margin-bottom:0; padding: 15px;">
+                    <div style="font-size:0.8em; opacity:0.7;">Registros</div>
+                    <div id="kpi-total" style="font-size:1.5em; font-weight:bold; color:var(--primary-color);">0</div>
+                </div>
+                <div class="card" style="text-align: center; margin-bottom:0; padding: 15px;">
+                    <div style="font-size:0.8em; opacity:0.7;">Catálogo</div>
+                    <div id="kpi-unicos" style="font-size:1.5em; font-weight:bold; color:var(--primary-color);">0</div>
+                </div>
+            </div>
+            <h3 style="font-size: 1.1em; margin-bottom: 10px;">Últimos Movimientos</h3>
+            <div class="card" style="padding:0; overflow:hidden;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <tbody id="tabla-body-dash"></tbody>
+                </table>
+            </div>
+        </section>
 
-    function setupGameUI() {
-        dom.gameLevelTitle.textContent = `${gameState.currentMode === 'VUELTO' ? 'Vuelto' : 'Cálculo'} - Nivel ${gameState.currentLevel}`;
-        dom.paymentCartItems.innerHTML = '';
-        dom.shoppingListItems.innerHTML = '';
-        gameState.shoppingList.forEach(item => {
-            const listItem = document.createElement('div'); listItem.className = 'list-item';
-            listItem.innerHTML = `<span>${item.emoji}</span><span class="list-item-price">${formatCurrency(item.price)}</span>`;
-            dom.shoppingListItems.appendChild(listItem);
-        });
-        if(gameState.currentMode === 'VUELTO'){
-            dom.customerPaymentDisplay.textContent = `Cliente Paga: ${formatCurrency(gameState.customerPayment)}`;
-            dom.customerPaymentDisplay.style.display = 'block';
-            dom.paymentTerminalTitle.textContent = "Bandeja de Vuelto";
-            dom.paymentTotalLabel.textContent = "Vuelto Entregado";
-        } else {
-            dom.customerPaymentDisplay.style.display = 'none';
-            dom.paymentTerminalTitle.textContent = "Terminal de Pago";
-            dom.paymentTotalLabel.textContent = "Total Pagado";
-        }
-        updateAttemptTrackerUI(); updatePurchaseProgressUI(); updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
-    }
+        <section id="vista-matriz" class="vista">
+            <h2 style="margin-bottom: 10px;">Comparador de Precios</h2>
+            <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Toca el nombre de una tienda para ordenar por precio.</p>
+            
+            <input type="text" id="input-busqueda-matriz" class="input-busqueda" placeholder="🔍 Buscar producto..." oninput="renderizarMatriz()">
 
-    function resetFailedAttempt() {
-        const moneyItems = dom.paymentCartItems.querySelectorAll('.money-item');
-        moneyItems.forEach(item => { const value = parseInt(item.dataset.value); if (gameState.availableDenominations[value] !== undefined) gameState.availableDenominations[value]++; });
-        gameState.amountPaid = 0;
-        dom.paymentCartItems.innerHTML = '';
-        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
-    }
+            <div class="matriz-container">
+                <table class="matriz-tabla" id="tabla-matriz"></table>
+            </div>
+        </section>
 
-    function updateAttemptTrackerUI() { dom.attemptTracker.innerHTML = Array.from({ length: CONSTANTS.MAX_ATTEMPTS }, (_, i) => `<span class="${i < gameState.attemptCount ? 'attempt-used' : ''}">${i < gameState.attemptCount ? '🤍' : '❤️'}</span>`).join(''); }
-    function updatePurchaseProgressUI() { dom.purchaseProgressTracker.textContent = `${gameState.successfulPurchases} / ${CONSTANTS.PURCHASES_PER_LEVEL}`; }
-    function updatePaymentTotalDisplay() { dom.paymentTotalDisplay.textContent = formatCurrency(gameState.amountPaid); }
-    function updateDenominationButtons() { document.querySelectorAll('.denomination-btn').forEach(btn => { const value = parseInt(btn.dataset.value); const count = gameState.availableDenominations[value] || 0; btn.querySelector('.denomination-count').textContent = `x${count}`; btn.classList.toggle('disabled', count === 0); }); }
-    function updateActionButtonsState() {
-        const canAct = gameState.amountPaid > 0;
-        dom.confirmPaymentBtn.disabled = !canAct;
-        dom.correctLastBtn.disabled = !canAct;
-    }
+        <section id="vista-ajustes" class="vista">
+            <h2 style="margin-bottom: 20px;">⚙️ Ajustes</h2>
+            
+            <div class="card" style="border-left: 4px solid var(--success-color);">
+                <h3 style="margin-bottom: 10px;">📊 Exportar a Excel</h3>
+                <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Descarga tu historial en formato CSV para abrirlo en Excel o Google Sheets.</p>
+                <button onclick="descargarCSV()" class="btn-success">📝 Exportar Historial (CSV)</button>
+            </div>
 
-    function initiateVerification() {
-        if (gameState.isVerifying || dom.confirmPaymentBtn.disabled) return;
-        showScreen(CONSTANTS.SCREENS.VERIFYING);
-        setTimeout(processVerification, 1500);
-    }
-    
-    function processVerification() {
-        const requiredAmount = gameState.currentMode === 'VUELTO' ? (gameState.customerPayment - gameState.targetTotal) : gameState.targetTotal;
-        const isCorrect = Math.abs(gameState.amountPaid - requiredAmount) < 0.001;
-        if (isCorrect) gameState.successfulPurchases++; 
-        else { gameState.attemptCount++; gameState.levelErrors++; }
-        showPurchaseTransition(isCorrect);
-    }
+            <div class="card" style="border-left: 4px solid var(--primary-color);">
+                <h3 style="margin-bottom: 10px;">💾 Respaldo Completo</h3>
+                <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Guarda o restaura toda la aplicación (JSON).</p>
+                <button onclick="descargarRespaldo()" class="btn-info" style="margin-bottom: 15px;">⬇️ Descargar Backup</button>
+                <label for="input-restaurar" class="btn-upload">⬆️ Subir Backup</label>
+                <input type="file" id="input-restaurar" accept=".json" style="display:none;" onchange="subirRespaldo(event)">
+            </div>
 
-    function showPurchaseTransition(isCorrect) {
-        dom.transitionButtonContainer.innerHTML = '';
-        dom.transitionDetails.innerHTML = '';
-        const isLevelComplete = gameState.successfulPurchases >= CONSTANTS.PURCHASES_PER_LEVEL;
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Mis Lugares</h3>
+                <div id="lista-lugares-ajustes"></div>
+            </div>
+        </section>
+    </main>
 
-        if (isCorrect) {
-            if (isLevelComplete) { handleLevelComplete(); return; }
-            dom.transitionTitle.textContent = '✅ ¡TRANSACCIÓN CORRECTA! ✅';
-            const nextButton = document.createElement('button'); nextButton.className = 'main-button';
-            nextButton.textContent = 'Siguiente Cliente';
-            nextButton.onclick = () => { startNewPurchase(gameState.currentLevel); showScreen(CONSTANTS.SCREENS.GAME); };
-            dom.transitionButtonContainer.appendChild(nextButton);
-        } else {
-            const isOutOfTries = gameState.attemptCount >= CONSTANTS.MAX_ATTEMPTS;
-            dom.transitionTitle.textContent = '❌ ¡CÁLCULO INCORRECTO! ❌';
-            const requiredAmount = gameState.currentMode === 'VUELTO' ? (gameState.customerPayment - gameState.targetTotal) : gameState.targetTotal;
-            dom.transitionDetails.innerHTML = `<p>${gameState.amountPaid < requiredAmount ? 'Falta dinero.' : 'Es demasiado dinero.'}</p>`;
-            const retryButton = document.createElement('button'); retryButton.className = 'main-button';
-            retryButton.textContent = isOutOfTries ? 'Reiniciar Transacción' : 'Intentar de Nuevo';
-            retryButton.onclick = () => {
-                isOutOfTries ? startNewPurchase(gameState.currentLevel) : resetFailedAttempt();
-                setupGameUI(); showScreen(CONSTANTS.SCREENS.GAME);
-            };
-            dom.transitionButtonContainer.appendChild(retryButton);
-        }
-        showScreen(CONSTANTS.SCREENS.TRANSITION);
-    }
-    
-    function handleLevelComplete() {
-        const charData = playerData[gameState.currentOperatorName];
-        const modeData = charData[gameState.currentMode];
-        if (gameState.currentLevel === modeData.maxLevel) modeData.maxLevel++;
-        if (modeData.maxLevel > CONSTANTS.MAX_LEVELS) modeData.hasMastery = true;
-        savePlayerData();
-        dom.transitionTitle.textContent = `🎉 ¡NIVEL ${gameState.currentLevel} COMPLETADO! 🎉`;
-        const nextButton = document.createElement('button'); nextButton.className = 'main-button';
-        nextButton.textContent = 'Volver al Panel';
-        nextButton.onclick = () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); };
-        dom.transitionButtonContainer.innerHTML = '';
-        dom.transitionButtonContainer.appendChild(nextButton);
-        showScreen(CONSTANTS.SCREENS.TRANSITION);
-    }
+    <div id="modal-historial" class="modal-overlay" onclick="cerrarModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 id="modal-titulo">Historial</h3>
+                <button onclick="document.getElementById('modal-historial').style.display='none'" style="width:auto; padding:5px 10px; background:var(--bg-color); color:var(--text-color);">❌</button>
+            </div>
+            <p id="modal-subtitulo" style="font-size:0.9em; opacity:0.8; margin-bottom:15px;"></p>
+            <div id="modal-lista"></div>
+        </div>
+    </div>
 
-    function setupLevelSelectScreen() {
-        dom.levelSelectTitle.innerHTML = `Operador: <span style="color:var(--accent-color);">${gameState.currentOperatorName}</span> - Modo ${gameState.currentMode}`;
-        const modeData = playerData[gameState.currentOperatorName][gameState.currentMode];
+    <nav>
+        <button class="nav-btn activa" onclick="cambiarVista('vista-ingreso', this)"><span class="nav-icon">➕</span><span>Ingreso</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-matriz', this)"><span class="nav-icon">📈</span><span>Comparar</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-dashboard', this)"><span class="nav-icon">📊</span><span>Resumen</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-ajustes', this)"><span class="nav-icon">⚙️</span><span>Ajustes</span></button>
+    </nav>
 
-        dom.levelGrid.innerHTML = '';
-        for (let i = 1; i <= CONSTANTS.MAX_LEVELS; i++) {
-            const card = document.createElement('div'); card.className = 'level-card';
-            let label = `<span class="level-number">${i}</span>`;
-            if (i < modeData.maxLevel) card.classList.add('completed');
-            else if (i === modeData.maxLevel) card.classList.add('active');
-            else { card.classList.add('locked'); label = ''; }
-            card.innerHTML = label;
-
-            if (!card.classList.contains('locked')) {
-                card.addEventListener('click', () => {
-                    dom.cashierAvatar.textContent = '🤖'; dom.cashierName.textContent = gameState.currentOperatorName;
-                    gameState.successfulPurchases = 0; gameState.levelErrors = 0;
-                    startNewPurchase(i); showScreen(CONSTANTS.SCREENS.GAME);
-                });
-            }
-            dom.levelGrid.appendChild(card);
-        }
-    }
-
-    function addMoneyToCart(value, type) { 
-        if (gameState.isVerifying) return; 
-        gameState.amountPaid += value; gameState.availableDenominations[value]--; 
-        const moneyElement = document.createElement('div'); moneyElement.className = `money-item ${type}`; 
-        moneyElement.textContent = type === 'bill' ? denominations.find(d => d.v === value).e : `$${value}`;
-        moneyElement.dataset.value = value; 
-        moneyElement.addEventListener('click', handleMoneyItemClick); 
-        dom.paymentCartItems.appendChild(moneyElement); 
-        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
-    }
-    
-    function setupNameEntryScreen() {
-        let currentName = ''; let isShiftActive = true;
-        const layout = ['Q','W','E','R','T','Y','U','I','O','P','@','A','S','D','F','G','H','J','K','L','SHIFT','Z','X','C','V','B','N','M','BACKSPACE','ENTER'];
-        dom.virtualKeyboard.innerHTML = '';
+    <script>
+        // --- 1. PERSISTENCIA Y VARIABLES GLOBALES ---
+        let productos = JSON.parse(localStorage.getItem('productosAhorro')) || [];
+        let catalogoProductos = JSON.parse(localStorage.getItem('catalogoAhorro')) || [];
+        let lugares = JSON.parse(localStorage.getItem('lugaresAhorro')) || [{nombre: 'Supermercado Norte', activo: true}];
         
-        layout.forEach(key => {
-            const keyEl = document.createElement('button');
-            keyEl.className = 'keyboard-key'; keyEl.dataset.key = key;
+        let matrizOrdenActual = { lugar: null, ascendente: true };
+        const html5QrcodeScanner = new Html5Qrcode("reader");
 
-            if ('QWERTYUIOP@ASDFGHJKLZXCVBNM'.includes(key)) keyEl.style.gridColumn = 'auto / span 2';
-            if (key === 'SHIFT') keyEl.style.gridColumn = '1 / span 3';
-            if (key === 'Z') keyEl.style.gridColumnStart = '4';
-            if (key === 'BACKSPACE') keyEl.style.gridColumn = '18 / span 3';
-            if (key === 'ENTER') keyEl.style.gridColumn = '1 / -1';
-           
-            if ('SHIFT' === key) {
-                keyEl.classList.add('functional-key', 'shift'); keyEl.textContent = '⇧';
-                keyEl.addEventListener('click', () => { isShiftActive = !isShiftActive; updateKeyboardVisuals(); });
-            } else if ('BACKSPACE' === key) {
-                keyEl.classList.add('functional-key', 'backspace'); keyEl.textContent = '⌫';
-                keyEl.addEventListener('click', () => { currentName = currentName.slice(0, -1); dom.nameText.textContent = currentName; });
-            } else if ('ENTER' === key) {
-                keyEl.classList.add('functional-key'); keyEl.textContent = 'ENTER';
-                keyEl.addEventListener('click', () => {
-                    if (currentName.trim().length === 0) return;
-                    gameState.currentOperatorName = currentName.trim();
-                    if (!playerData[gameState.currentOperatorName]) {
-                        playerData[gameState.currentOperatorName] = { CALCULO: { maxLevel: 1, records: {} }, VUELTO: { maxLevel: 1, records: {} } };
-                        savePlayerData();
+        // --- 2. INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarLugares(); renderizarCatalogo();
+            renderizarDashboard(); renderizarMatriz(); renderizarAjustes();
+        });
+
+        function mostrarToast(mensaje, color = 'var(--success-color)') {
+            const toast = document.getElementById('mensaje-exito');
+            toast.textContent = mensaje; toast.style.background = color; toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function cambiarVista(idVista, btnElement) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('activo'));
+            document.getElementById(idVista).classList.add('activa');
+            btnElement.classList.add('activo');
+            if(idVista === 'vista-dashboard') renderizarDashboard();
+            if(idVista === 'vista-matriz') renderizarMatriz();
+            if(idVista === 'vista-ajustes') renderizarAjustes();
+        }
+
+        // --- 3. GESTIÓN DE LUGARES Y PRODUCTOS ---
+        const selectLugar = document.getElementById('select-lugar');
+        const inputNuevoLugar = document.getElementById('input-nuevo-lugar');
+        const selectProducto = document.getElementById('select-producto');
+        const inputNuevoProducto = document.getElementById('input-nuevo-producto');
+
+        function renderizarLugares() {
+            const valorActual = selectLugar.value;
+            selectLugar.innerHTML = '<option value="">Seleccione un lugar...</option>';
+            lugares.filter(l => l.activo).sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach(lugar => {
+                selectLugar.innerHTML += `<option value="${lugar.nombre}">${lugar.nombre}</option>`;
+            });
+            selectLugar.innerHTML += '<option value="nuevo_lugar">+ Añadir nuevo lugar</option>';
+            if(lugares.find(l => l.nombre === valorActual && l.activo)) selectLugar.value = valorActual;
+        }
+
+        function renderizarCatalogo() {
+            const valorActual = selectProducto.value;
+            selectProducto.innerHTML = '<option value="">Seleccione un producto...</option>';
+            catalogoProductos.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach(prod => {
+                selectProducto.innerHTML += `<option value="${prod.nombre}">${prod.nombre}</option>`;
+            });
+            selectProducto.innerHTML += '<option value="nuevo_producto">+ Añadir nuevo producto</option>';
+            if(catalogoProductos.find(c => c.nombre === valorActual)) selectProducto.value = valorActual;
+        }
+
+        selectLugar.addEventListener('change', (e) => {
+            inputNuevoLugar.style.display = (e.target.value === 'nuevo_lugar') ? 'block' : 'none';
+            if(e.target.value === 'nuevo_lugar') inputNuevoLugar.focus();
+        });
+        selectProducto.addEventListener('change', (e) => {
+            inputNuevoProducto.style.display = (e.target.value === 'nuevo_producto') ? 'block' : 'none';
+            if(e.target.value === 'nuevo_producto') inputNuevoProducto.focus();
+        });
+
+        // --- 4. ESCÁNER CON AUTOCOMPLETADO INTELIGENTE ---
+        document.getElementById('btn-escanear').addEventListener('click', () => {
+            const readerDiv = document.getElementById('reader');
+            if (readerDiv.style.display === 'block') { html5QrcodeScanner.stop().then(() => { readerDiv.style.display = 'none'; }); return; }
+            readerDiv.style.display = 'block';
+            html5QrcodeScanner.start( { facingMode: "environment" }, { fps: 10, qrbox: {width: 250, height: 250} },
+                (decodedText) => {
+                    document.getElementById('input-codigo').value = decodedText;
+                    const prodEncontrado = catalogoProductos.find(c => c.codigos.includes(decodedText));
+                    
+                    if (prodEncontrado) { 
+                        selectProducto.value = prodEncontrado.nombre; inputNuevoProducto.style.display = 'none'; 
+                        const historialProd = productos.filter(p => p.nombre === prodEncontrado.nombre).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                        if (historialProd.length > 0) {
+                            if (lugares.find(l => l.nombre === historialProd[0].lugar && l.activo)) {
+                                selectLugar.value = historialProd[0].lugar; inputNuevoLugar.style.display = 'none';
+                            }
+                            document.getElementById('input-precio').value = historialProd[0].precio;
+                            mostrarToast('Datos recuperados automáticamente', 'var(--primary-color)');
+                        }
+                    } else if (!selectProducto.value || selectProducto.value === 'nuevo_producto') {
+                        selectProducto.value = 'nuevo_producto'; inputNuevoProducto.style.display = 'block';
+                        document.getElementById('input-precio').value = '';
                     }
-                    showScreen(CONSTANTS.SCREENS.MODE_SELECT);
+                    html5QrcodeScanner.stop(); readerDiv.style.display = 'none';
+                }, (err) => {}
+            ).catch(err => { alert("Error con la cámara."); readerDiv.style.display = 'none'; });
+        });
+
+        // --- 5. GUARDADO ---
+        document.getElementById('form-producto').addEventListener('submit', (e) => {
+            e.preventDefault();
+            let lugarFinal = selectLugar.value; let productoFinal = selectProducto.value;
+            const precio = parseFloat(document.getElementById('input-precio').value);
+            const codigo = document.getElementById('input-codigo').value.trim();
+            let esValido = true;
+
+            document.getElementById('error-lugar').style.display = 'none';
+            if (lugarFinal === 'nuevo_lugar') {
+                lugarFinal = inputNuevoLugar.value.trim();
+                if (!lugarFinal) { document.getElementById('error-lugar').style.display = 'block'; esValido = false; } 
+                else if (!lugares.find(l => l.nombre.toLowerCase() === lugarFinal.toLowerCase())) {
+                    lugares.push({nombre: lugarFinal, activo: true});
+                    localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); renderizarLugares();
+                }
+            } else if (!lugarFinal) { document.getElementById('error-lugar').style.display = 'block'; esValido = false; }
+
+            document.getElementById('error-producto').style.display = 'none';
+            if (productoFinal === 'nuevo_producto') {
+                productoFinal = inputNuevoProducto.value.trim();
+                if (!productoFinal) { document.getElementById('error-producto').style.display = 'block'; esValido = false; }
+                else {
+                    catalogoProductos.push({ nombre: productoFinal, codigos: codigo ? [codigo] : [] });
+                    localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos)); renderizarCatalogo();
+                }
+            } else if (!productoFinal) { document.getElementById('error-producto').style.display = 'block'; esValido = false; } 
+            else {
+                let catItem = catalogoProductos.find(c => c.nombre === productoFinal);
+                if (catItem && codigo && !catItem.codigos.includes(codigo)) {
+                    catItem.codigos.push(codigo); localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos));
+                }
+            }
+
+            if (isNaN(precio) || precio <= 0) { document.getElementById('error-precio').style.display = 'block'; esValido = false; }
+            if (!esValido) return;
+
+            productos.push({ id: Date.now(), lugar: lugarFinal, codigo: codigo || '', nombre: productoFinal, precio: precio, fecha: new Date().toISOString() });
+            localStorage.setItem('productosAhorro', JSON.stringify(productos));
+            mostrarToast('¡Precio registrado con éxito!');
+            
+            document.getElementById('input-precio').value = ''; document.getElementById('input-codigo').value = '';
+            inputNuevoLugar.style.display = 'none'; inputNuevoProducto.style.display = 'none';
+            selectLugar.value = lugarFinal; selectProducto.value = productoFinal;
+        });
+
+        // --- 6. DASHBOARD CON BUSCADOR Y FEEDBACK DE AHORRO ---
+        function renderizarDashboard() {
+            document.getElementById('kpi-total').textContent = productos.length;
+            document.getElementById('kpi-unicos').textContent = catalogoProductos.length;
+            const tbody = document.getElementById('tabla-body-dash');
+            tbody.innerHTML = '';
+            
+            const termino = document.getElementById('input-busqueda-dash').value.toLowerCase();
+            let listaFiltrada = [...productos].reverse();
+            if (termino) listaFiltrada = listaFiltrada.filter(p => p.nombre.toLowerCase().includes(termino) || p.lugar.toLowerCase().includes(termino));
+
+            if (listaFiltrada.length === 0) { tbody.innerHTML = '<tr><td style="padding:15px; text-align:center;">Sin resultados</td></tr>'; return; }
+
+            listaFiltrada.slice(0, 15).forEach(p => {
+                // Calcular si hubo ahorro (Comparar con el precio más alto histórico de este producto)
+                const historialProd = productos.filter(x => x.nombre === p.nombre);
+                const precioMaximo = Math.max(...historialProd.map(x => x.precio));
+                let badgeAhorro = '';
+                
+                if (precioMaximo > p.precio) {
+                    const ahorro = precioMaximo - p.precio;
+                    badgeAhorro = `<div class="badge-ahorro">¡Ahorraste Bs. ${ahorro.toFixed(2)}!</div>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding:15px; border-bottom:1px solid var(--border-color);">
+                        <strong>${p.nombre}</strong><br>
+                        <small style="color: gray;">📍 ${p.lugar}</small><br>
+                        ${badgeAhorro}
+                    </td>
+                    <td style="padding:15px; border-bottom:1px solid var(--border-color); text-align:right; font-weight:bold; color:var(--text-color);">
+                        Bs. ${p.precio.toFixed(2)}
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 7. MATRIZ INTELIGENTE (Buscador y Ordenamiento) ---
+        function ordenarMatriz(lugar) {
+            if (matrizOrdenActual.lugar === lugar) {
+                matrizOrdenActual.ascendente = !matrizOrdenActual.ascendente;
+            } else {
+                matrizOrdenActual.lugar = lugar;
+                matrizOrdenActual.ascendente = true;
+            }
+            renderizarMatriz();
+        }
+
+        function renderizarMatriz() {
+            const tabla = document.getElementById('tabla-matriz');
+            tabla.innerHTML = '';
+
+            const termino = document.getElementById('input-busqueda-matriz').value.toLowerCase();
+            const lugaresConDatos = [...new Set(productos.map(p => p.lugar))].sort();
+            let productosUnicos = [...new Set(productos.map(p => p.nombre))];
+
+            if (termino) productosUnicos = productosUnicos.filter(n => n.toLowerCase().includes(termino));
+            if (lugaresConDatos.length === 0 || productosUnicos.length === 0) {
+                tabla.innerHTML = '<tr><td style="padding:20px;">No hay datos para mostrar.</td></tr>'; return;
+            }
+
+            // Aplicar Ordenamiento
+            if (matrizOrdenActual.lugar) {
+                productosUnicos.sort((a, b) => {
+                    const histA = productos.filter(p => p.nombre === a && p.lugar === matrizOrdenActual.lugar).sort((x,y) => new Date(y.fecha) - new Date(x.fecha));
+                    const histB = productos.filter(p => p.nombre === b && p.lugar === matrizOrdenActual.lugar).sort((x,y) => new Date(y.fecha) - new Date(x.fecha));
+                    const precioA = histA.length > 0 ? histA[0].precio : (matrizOrdenActual.ascendente ? Infinity : -Infinity);
+                    const precioB = histB.length > 0 ? histB[0].precio : (matrizOrdenActual.ascendente ? Infinity : -Infinity);
+                    return matrizOrdenActual.ascendente ? precioA - precioB : precioB - precioA;
                 });
             } else {
-                keyEl.classList.add('letter');
-                keyEl.addEventListener('click', () => {
-                    if (currentName.length < 15) {
-                        const charToAdd = (isShiftActive && key !== '@') ? key.toUpperCase() : key.toLowerCase();
-                        currentName += charToAdd;
-                        dom.nameText.textContent = currentName;
+                productosUnicos.sort(); // Orden alfabético por defecto
+            }
+
+            let thead = '<thead><tr><th>Producto</th>';
+            lugaresConDatos.forEach(l => { 
+                const icono = (matrizOrdenActual.lugar === l) ? (matrizOrdenActual.ascendente ? ' 🔼' : ' 🔽') : '';
+                thead += `<th onclick="ordenarMatriz('${l}')">${l}${icono}</th>`; 
+            });
+            thead += '</tr></thead>';
+            tabla.innerHTML = thead;
+
+            const tbody = document.createElement('tbody');
+            productosUnicos.forEach(prod => {
+                const tr = document.createElement('tr');
+                let filaHTML = `<td>${prod}</td>`;
+                
+                lugaresConDatos.forEach(lugar => {
+                    const historial = productos.filter(p => p.nombre === prod && p.lugar === lugar).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                    if (historial.length === 0) { filaHTML += `<td style="color:#a0aec0;">-</td>`; } 
+                    else {
+                        const precioActual = historial[0].precio;
+                        let tendencia = ''; let claseTendencia = '';
+                        if (historial.length > 1) {
+                            if (precioActual > historial[1].precio) { tendencia = ' 🔴'; claseTendencia = 'tendencia-sube'; }
+                            else if (precioActual < historial[1].precio) { tendencia = ' 🟢'; claseTendencia = 'tendencia-baja'; }
+                        }
+                        filaHTML += `<td class="celda-precio" onclick="abrirModal('${prod}', '${lugar}')"><span class="${claseTendencia}">Bs. ${precioActual.toFixed(2)}${tendencia}</span></td>`;
                     }
                 });
-            }
-            dom.virtualKeyboard.appendChild(keyEl);
-        });
-
-        const updateKeyboardVisuals = () => {
-            dom.virtualKeyboard.querySelectorAll('.keyboard-key.letter').forEach(key => {
-                key.textContent = (isShiftActive && key.dataset.key !== '@') ? key.dataset.key.toUpperCase() : key.dataset.key.toLowerCase();
+                tr.innerHTML = filaHTML; tbody.appendChild(tr);
             });
-            dom.virtualKeyboard.querySelector('.shift')?.classList.toggle('active', isShiftActive);
-        };
-        updateKeyboardVisuals();
-    }
-    
-    function setupProfileSelectScreen() {
-        dom.profileGrid.innerHTML = '';
-        Object.keys(playerData).forEach(name => {
-            const card = document.createElement('div'); card.className = 'profile-card'; card.dataset.name = name;
-            const data = playerData[name];
-            card.innerHTML = `
-                <div class="profile-name">${name}</div>
-                <dl class="profile-progress-grid">
-                    <dt>Nivel Cálculo:</dt><dd>${data.CALCULO.maxLevel -1}</dd>
-                    <dt>Nivel Vuelto:</dt><dd>${data.VUELTO.maxLevel -1}</dd>
-                </dl>
-            `;
-            card.addEventListener('click', () => { gameState.currentOperatorName = name; showScreen(CONSTANTS.SCREENS.MODE_SELECT); });
-            dom.profileGrid.appendChild(card);
-        });
-        const newProfileCard = document.createElement('div');
-        newProfileCard.className = 'profile-card new-profile'; newProfileCard.textContent = '+';
-        newProfileCard.addEventListener('click', () => showScreen(CONSTANTS.SCREENS.NAME_ENTRY));
-        dom.profileGrid.appendChild(newProfileCard);
-    }
-    
-    function savePlayerData() { try { localStorage.setItem(CONSTANTS.STORAGE_KEY, JSON.stringify(playerData)); } catch (e) {} }
-    function loadPlayerData() { try { const data = localStorage.getItem(CONSTANTS.STORAGE_KEY); playerData = data ? JSON.parse(data) : {}; } catch (e) { playerData = {}; } }
+            tabla.appendChild(tbody);
+        }
 
-    function init() {
-        document.getElementById('start-button').addEventListener('click', () => { requestFullscreen(); setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
-        document.getElementById('name-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
-        document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click', (e) => { gameState.currentMode = e.currentTarget.dataset.mode; setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); }));
-        document.getElementById('mode-select-back-button').addEventListener('click', () => { setupProfileSelectScreen(); showScreen(CONSTANTS.SCREENS.PROFILE_SELECT); });
-        document.getElementById('level-select-back-button').addEventListener('click', () => showScreen(CONSTANTS.SCREENS.MODE_SELECT));
-        document.getElementById('game-back-button').addEventListener('click', () => { setupLevelSelectScreen(); showScreen(CONSTANTS.SCREENS.LEVEL_SELECT); });
-        dom.correctLastBtn.addEventListener('click', () => { const last = dom.paymentCartItems.lastElementChild; if(last) last.click(); });
-        dom.confirmPaymentBtn.addEventListener('click', initiateVerification);
-        
-        setupNameEntryScreen(); setupPaymentTerminal();
-        loadPlayerData();
-    }
-    
-    function setupPaymentTerminal() { 
-        dom.billDenominations.innerHTML = ''; dom.coinDenominations.innerHTML = '';
-        denominations.forEach(d => { 
-            const btn = document.createElement('div'); 
-            btn.className = `denomination-btn ${d.type}-btn`;
-            btn.innerHTML = `<span>$${d.v}</span><span class="denomination-count"></span>`; 
-            btn.dataset.value = d.v; btn.dataset.type = d.type;
-            btn.addEventListener('click', () => { if (!btn.classList.contains('disabled')) addMoneyToCart(d.v, d.type); });
-            if (d.type === 'bill') dom.billDenominations.appendChild(btn);
-            else dom.coinDenominations.appendChild(btn);
-        }); 
-    }
+        // --- 8. HISTORIAL (MODAL) ---
+        function abrirModal(producto, lugar) {
+            const modal = document.getElementById('modal-historial');
+            document.getElementById('modal-titulo').textContent = producto; document.getElementById('modal-subtitulo').textContent = `📍 ${lugar}`;
+            const listaDiv = document.getElementById('modal-lista'); listaDiv.innerHTML = '';
+            const historial = productos.filter(p => p.nombre === producto && p.lugar === lugar).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-    function requestFullscreen() { if (gameState.firstInteraction) { document.documentElement.requestFullscreen().catch(err => {}); gameState.firstInteraction = false; } }
-    function handleMoneyItemClick(e) {
-        if (gameState.isVerifying) return;
-        const moneyItem = e.target.closest('.money-item'); if (!moneyItem) return;
-        const value = parseInt(moneyItem.dataset.value);
-        gameState.amountPaid -= value;
-        gameState.availableDenominations[value]++;
-        moneyItem.remove();
-        updateDenominationButtons(); updatePaymentTotalDisplay(); updateActionButtonsState();
-    }
-    
-    init();
-});
-</script>
+            historial.forEach((reg, index) => {
+                const fecha = new Date(reg.fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+                let variacion = '';
+                if (index < historial.length - 1) {
+                    if (reg.precio > historial[index + 1].precio) variacion = `<span style="color:var(--danger-color); font-size:0.8em;">(Subió)</span>`;
+                    if (reg.precio < historial[index + 1].precio) variacion = `<span style="color:var(--success-color); font-size:0.8em;">(Bajó)</span>`;
+                }
+                listaDiv.innerHTML += `<div class="historial-item"><div><div style="font-size:0.85em; color:gray;">${fecha}</div></div><div style="font-weight:bold;">Bs. ${reg.precio.toFixed(2)} ${variacion}</div></div>`;
+            });
+            modal.style.display = 'flex';
+        }
+        function cerrarModal(e) { if(e.target.id === 'modal-historial') document.getElementById('modal-historial').style.display = 'none'; }
+
+        // --- 9. AJUSTES (CSV, JSON, LUGARES) ---
+        function renderizarAjustes() {
+            const lista = document.getElementById('lista-lugares-ajustes'); lista.innerHTML = '';
+            lugares.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((lugar, i) => {
+                lista.innerHTML += `<div class="lugar-item"><span style="${!lugar.activo ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${lugar.nombre}</span><button class="${lugar.activo ? 'btn-danger' : ''}" style="width:auto; padding:8px 15px; background:${lugar.activo ? '' : 'var(--success-color)'}" onclick="toggleLugar(${i})">${lugar.activo ? 'Ocultar' : 'Restaurar'}</button></div>`;
+            });
+        }
+        function toggleLugar(index) { lugares[index].activo = !lugares[index].activo; localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); renderizarAjustes(); renderizarLugares(); }
+
+        // Exportar a CSV
+        function descargarCSV() {
+            if (productos.length === 0) { alert("No hay datos para exportar."); return; }
+            let csv = "Fecha,Lugar,Producto,Codigo_Barras,Precio_Bs\n";
+            productos.forEach(p => {
+                // Prevenir errores con comas en nombres/lugares
+                const fechaFormat = new Date(p.fecha).toLocaleString('es-ES');
+                csv += `"${fechaFormat}","${p.lugar.replace(/"/g, '""')}","${p.nombre.replace(/"/g, '""')}","${p.codigo}",${p.precio}\n`;
+            });
+            const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob); const a = document.createElement("a");
+            a.href = url; a.download = `historial_ahorro_${new Date().getTime()}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            mostrarToast("¡CSV exportado con éxito!");
+        }
+
+        // Respaldos JSON
+        function descargarRespaldo() {
+            const data = { version: "1.5", productos, catalogoProductos, lugares };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob); const a = document.createElement("a");
+            a.href = url; a.download = `backup_app_${new Date().getTime()}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            mostrarToast("¡Respaldo JSON descargado!");
+        }
+        function subirRespaldo(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.productos || !data.catalogoProductos || !data.lugares) throw new Error("Formato inválido.");
+                    if (confirm("⚠️ ADVERTENCIA: Esto sobrescribirá todos tus datos actuales. ¿Continuar?")) {
+                        localStorage.setItem('productosAhorro', JSON.stringify(data.productos));
+                        localStorage.setItem('catalogoAhorro', JSON.stringify(data.catalogoProductos));
+                        localStorage.setItem('lugaresAhorro', JSON.stringify(data.lugares));
+                        alert("✅ Datos restaurados. La app se recargará."); location.reload();
+                    }
+                } catch (error) { alert("❌ Error al leer el archivo. Asegúrate que sea un JSON válido."); }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+    </script>
 </body>
 </html>
