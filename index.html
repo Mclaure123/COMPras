@@ -3,550 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ahorro Inteligente V1.5</title>
+    <title>Ahorro Inteligente V3.0 PRO</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* ==========================================
            VARIABLES Y TEMA OSCURO/CLARO
            ========================================== */
         :root {
-            --bg-color: #f0f4f8;
-            --text-color: #2d3748;
-            --card-bg: #ffffff;
-            --primary-color: #3182ce;
-            --primary-hover: #2b6cb0;
-            --success-color: #38a169;
-            --danger-color: #e53e3e;
-            --warning-color: #dd6b20;
-            --nav-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --bg-color: #f0f4f8; --text-color: #2d3748; --card-bg: #ffffff;
+            --primary-color: #3182ce; --primary-hover: #2b6cb0;
+            --success-color: #38a169; --danger-color: #e53e3e; --warning-color: #dd6b20;
+            --nav-bg: #ffffff; --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12); --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
             --radius: 12px;
-            --modal-bg: rgba(0,0,0,0.5);
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #1a202c;
-                --text-color: #e2e8f0;
-                --card-bg: #2d3748;
-                --primary-color: #4299e1;
-                --primary-hover: #3182ce;
-                --success-color: #48bb78;
-                --danger-color: #fc8181;
-                --warning-color: #f6ad55;
-                --nav-bg: #2d3748;
-                --border-color: #4a5568;
-                --modal-bg: rgba(0,0,0,0.7);
+                --bg-color: #1a202c; --text-color: #e2e8f0; --card-bg: #2d3748;
+                --primary-color: #4299e1; --primary-hover: #3182ce;
+                --success-color: #48bb78; --danger-color: #fc8181;
+                --nav-bg: #2d3748; --border-color: #4a5568;
             }
         }
 
-        /* ==========================================
-           ESTILOS GLOBALES
-           ========================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 80px; transition: background-color 0.3s; }
-        main { padding: 20px; max-width: 800px; margin: 0 auto; }
-        .vista { display: none; animation: fadeIn 0.3s ease-in-out; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 80px; }
+        main { padding: 20px; max-width: 800px; margin: 0 auto; margin-top: 40px; }
+        .vista { display: none; animation: fadeIn 0.3s ease; }
         .vista.activa { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ==========================================
-           ESTILOS COMPARTIDOS
-           ========================================== */
         .card { background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-md); margin-bottom: 20px; }
         .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95em; opacity: 0.9; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95em; }
         input, select, button { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-color); color: var(--text-color); font-size: 16px; }
-        .input-busqueda { margin-bottom: 15px; border: 2px solid var(--primary-color); background: var(--card-bg); }
-        
         button { background-color: var(--primary-color); color: white; border: none; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-sm); }
         button:hover { background-color: var(--primary-hover); }
-        .btn-danger { background-color: var(--danger-color); }
-        .btn-success { background-color: var(--success-color); }
-        .btn-info { background-color: #4299e1; }
-        .btn-upload { display: block; text-align: center; background-color: var(--warning-color); color: white; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: var(--shadow-sm); }
-
+        
         .scan-container { display: flex; gap: 10px; }
         .scan-container input { flex: 1; }
         .scan-container button { width: auto; background-color: var(--success-color); }
-
         #reader { width: 100%; margin-top: 10px; border-radius: 8px; overflow: hidden; border: 2px dashed var(--primary-color); }
-        .mensaje-toast { display: none; background: var(--success-color); color: white; text-align: center; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; position: sticky; top: 10px; z-index: 3000;}
-        .error-texto { color: var(--danger-color); font-size: 0.85em; display: none; margin-top: 5px; font-weight: 500; }
-
-        /* ==========================================
-           MATRIZ
-           ========================================== */
-        .matriz-container { width: 100%; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-md); }
-        .matriz-container::-webkit-scrollbar { display: none; }
-        .matriz-tabla { border-collapse: collapse; width: max-content; min-width: 100%; }
-        .matriz-tabla th, .matriz-tabla td { padding: 12px 15px; border: 1px solid var(--border-color); text-align: center; font-size: 0.9em; white-space: nowrap; }
-        .matriz-tabla th:first-child, .matriz-tabla td:first-child { position: sticky; left: 0; background-color: var(--card-bg); z-index: 2; text-align: left; box-shadow: 2px 0 5px rgba(0,0,0,0.05); font-weight: bold; }
-        .matriz-tabla th { background-color: var(--nav-bg); z-index: 3; cursor: pointer; transition: background 0.2s;}
-        .matriz-tabla th:hover { background-color: rgba(49, 130, 206, 0.1); }
-        .matriz-tabla th:first-child { z-index: 4; cursor: default; background-color: var(--nav-bg); }
         
-        .celda-precio { cursor: pointer; transition: background 0.2s; }
-        .celda-precio:hover { background-color: rgba(49, 130, 206, 0.1); }
-        .tendencia-sube { color: var(--danger-color); font-weight: bold; }
-        .tendencia-baja { color: var(--success-color); font-weight: bold; }
-        .tendencia-igual { color: gray; }
+        /* LED CON ANIMACIÓN DE PULSO */
+        .led-container { position: fixed; top: 10px; left: 10px; z-index: 4000; display: flex; align-items: center; gap: 8px; background: var(--card-bg); padding: 6px 12px; border-radius: 20px; box-shadow: var(--shadow-md); font-size: 0.85em; font-weight: bold; border: 1px solid var(--border-color); }
+        .led { width: 12px; height: 12px; border-radius: 50%; animation: latido 1.2s infinite; }
+        .led.rojo { background-color: var(--danger-color); box-shadow: 0 0 8px var(--danger-color); }
+        .led.verde { background-color: var(--success-color); box-shadow: 0 0 8px var(--success-color); }
+        @keyframes latido { 0% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.8; } }
 
-        /* ==========================================
-           MODAL DE HISTORIAL
-           ========================================== */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-md); max-height: 80vh; overflow-y: auto; }
-        .historial-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
-        .lugar-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .badge-ahorro { background: rgba(56, 161, 105, 0.15); color: var(--success-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-top: 5px; border: 1px solid var(--success-color); }
+        .mensaje-toast { display: none; background: var(--success-color); color: white; text-align: center; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; position: sticky; top: 60px; z-index: 3000; box-shadow: var(--shadow-md); }
 
-        /* ==========================================
-           MENÚ INFERIOR
-           ========================================== */
+        /* MATRIZ */
+        .tabla-container { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-md); }
+        .tabla { border-collapse: collapse; width: max-content; min-width: 100%; }
+        .tabla th, .tabla td { padding: 12px; border: 1px solid var(--border-color); text-align: center; }
+        .tabla th:first-child, .tabla td:first-child { position: sticky; left: 0; background-color: var(--card-bg); z-index: 2; text-align: left; font-weight: bold; }
+        .tabla th { background-color: var(--nav-bg); }
+        .mejor-precio { background-color: rgba(72, 187, 120, 0.25) !important; border: 2px solid var(--success-color); font-weight: bold; }
+
+        /* CARRITO (CANTIDAD Y DECIMALES) */
+        .cart-item { border-bottom: 1px solid var(--border-color); padding: 15px 0; }
+        .cart-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .cart-controls { display: flex; align-items: center; gap: 5px; background: var(--bg-color); border-radius: 8px; padding: 2px; }
+        .cart-controls button { width: 35px; height: 35px; padding: 0; border-radius: 6px; font-size: 1.2em; background: var(--primary-color); }
+        .cart-controls input { width: 60px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
+        .cart-select { padding: 8px; font-size: 0.9em; width: 100%; border-radius: 8px; }
+
+        /* NAVEGACIÓN */
         nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 1000; }
-        .nav-btn { background: transparent; box-shadow: none; color: var(--text-color); border: none; font-size: 0.75em; display: flex; flex-direction: column; align-items: center; opacity: 0.5; padding: 5px; width: 25%; }
-        .nav-btn.activo { opacity: 1; color: var(--primary-color); }
-        .nav-icon { font-size: 1.6em; margin-bottom: 4px; }
+        .nav-btn { background: transparent; color: var(--text-color); border: none; font-size: 0.7em; display: flex; flex-direction: column; align-items: center; opacity: 0.5; padding: 5px; width: 20%; }
+        .nav-btn.activo { opacity: 1; color: var(--primary-color); font-weight: bold; }
+        .nav-icon { font-size: 1.5em; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
+    <div class="led-container">
+        <div id="led-circulo" class="led rojo"></div>
+        <span id="led-texto">Offline</span>
+    </div>
+
     <main>
         <div id="mensaje-exito" class="mensaje-toast">¡Acción exitosa!</div>
 
-        <section id="vista-ingreso" class="vista activa">
-            <h2 style="margin-bottom: 20px;">Añadir Registro</h2>
+        <section id="vista-auth" class="vista activa">
+            <h2 style="margin-bottom: 15px; text-align: center;">Acceso Seguro</h2>
+            <p style="text-align: center; opacity: 0.8; margin-bottom: 20px;">Conéctate para sincronizar tus precios en Supabase.</p>
             <div class="card">
-                <form id="form-producto" novalidate>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="auth-email" placeholder="tu@correo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="auth-pass" placeholder="******">
+                </div>
+                <button onclick="iniciarSesion()" style="margin-bottom: 10px;">🔐 Iniciar Sesión</button>
+                <button onclick="registrarse()" style="background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color);">Crear Cuenta Nueva</button>
+            </div>
+        </section>
+
+        <section id="vista-ingreso" class="vista">
+            <h2 style="margin-bottom: 15px;">Añadir Registro</h2>
+            <div class="card">
+                <form id="form-producto">
                     <div class="form-group">
-                        <label for="input-codigo">📷 Código de Barras (Escanea Primero)</label>
+                        <label>📷 Código de Barras</label>
                         <div class="scan-container">
-                            <input type="text" id="input-codigo" placeholder="Ej. 777123456789">
+                            <input type="text" id="input-codigo" placeholder="Opcional">
                             <button type="button" id="btn-escanear">Escanear</button>
                         </div>
                         <div id="reader" style="display:none;"></div>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="select-producto">🛒 Nombre del Producto *</label>
+                        <label>🛒 Producto *</label>
                         <select id="select-producto" required></select>
-                        <input type="text" id="input-nuevo-producto" placeholder="Nombre del nuevo producto" style="display:none; margin-top:10px;">
-                        <div id="error-producto" class="error-texto">El nombre es obligatorio.</div>
+                        <input type="text" id="input-nuevo-producto" placeholder="Nombre" style="display:none; margin-top:10px;">
                     </div>
+
+                    <div class="form-group" id="grupo-categoria" style="display:none;">
+                        <label>🏷️ Categoría</label>
+                        <select id="select-categoria"></select>
+                        <input type="text" id="input-nueva-categoria" placeholder="Nombre" style="display:none; margin-top:10px;">
+                    </div>
+
                     <div class="form-group">
-                        <label for="select-lugar">🏪 Lugar de Compra *</label>
+                        <label>🏪 Lugar *</label>
                         <select id="select-lugar" required></select>
-                        <input type="text" id="input-nuevo-lugar" placeholder="Nombre del nuevo lugar" style="display:none; margin-top:10px;">
-                        <div id="error-lugar" class="error-texto">Seleccione o ingrese un lugar.</div>
+                        <input type="text" id="input-nuevo-lugar" placeholder="Nombre" style="display:none; margin-top:10px;">
                     </div>
+
                     <div class="form-group">
-                        <label for="input-precio">💰 Precio (Bs.) *</label>
-                        <input type="number" id="input-precio" placeholder="0.00" step="0.01" min="0.01" required>
-                        <div id="error-precio" class="error-texto">Ingrese un precio válido.</div>
+                        <label>💰 Precio Unitario/Kilo (Bs.) *</label>
+                        <input type="number" id="input-precio" step="0.01" required>
                     </div>
-                    <button type="submit" id="btn-guardar">💾 Guardar Precio</button>
+                    <button type="submit">💾 Guardar Precio</button>
                 </form>
             </div>
         </section>
 
-        <section id="vista-dashboard" class="vista">
-            <h2 style="margin-bottom: 20px;">Mi Ahorro</h2>
-            
-            <input type="text" id="input-busqueda-dash" class="input-busqueda" placeholder="🔍 Buscar en movimientos..." oninput="renderizarDashboard()">
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                <div class="card" style="text-align: center; margin-bottom:0; padding: 15px;">
-                    <div style="font-size:0.8em; opacity:0.7;">Registros</div>
-                    <div id="kpi-total" style="font-size:1.5em; font-weight:bold; color:var(--primary-color);">0</div>
-                </div>
-                <div class="card" style="text-align: center; margin-bottom:0; padding: 15px;">
-                    <div style="font-size:0.8em; opacity:0.7;">Catálogo</div>
-                    <div id="kpi-unicos" style="font-size:1.5em; font-weight:bold; color:var(--primary-color);">0</div>
-                </div>
-            </div>
-            <h3 style="font-size: 1.1em; margin-bottom: 10px;">Últimos Movimientos</h3>
-            <div class="card" style="padding:0; overflow:hidden;">
-                <table style="width:100%; border-collapse:collapse;">
-                    <tbody id="tabla-body-dash"></tbody>
-                </table>
+        <section id="vista-matriz" class="vista">
+            <h2 style="margin-bottom: 10px;">Comparador</h2>
+            <input type="text" id="input-busqueda-matriz" style="margin-bottom: 15px; border: 2px solid var(--primary-color);" placeholder="🔍 Buscar producto..." oninput="renderizarMatriz()">
+            <div class="tabla-container">
+                <table class="tabla" id="tabla-matriz"></table>
             </div>
         </section>
 
-        <section id="vista-matriz" class="vista">
-            <h2 style="margin-bottom: 10px;">Comparador de Precios</h2>
-            <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Toca el nombre de una tienda para ordenar por precio.</p>
-            
-            <input type="text" id="input-busqueda-matriz" class="input-busqueda" placeholder="🔍 Buscar producto..." oninput="renderizarMatriz()">
-
-            <div class="matriz-container">
-                <table class="matriz-tabla" id="tabla-matriz"></table>
+        <section id="vista-carrito" class="vista">
+            <h2 style="margin-bottom: 10px;">🛒 Lista de Compras</h2>
+            <div class="form-group">
+                <select id="select-agregar-carrito" onchange="agregarAlCarrito()">
+                    <option value="">+ Añadir a la lista...</option>
+                </select>
+            </div>
+            <div class="card" style="padding: 0;">
+                <div id="lista-carrito-items" style="padding: 15px;"></div>
+                <div style="padding: 15px; background: rgba(0,0,0,0.05); text-align: right; border-top: 1px solid var(--border-color);">
+                    <h3>Total Estimado: <span id="total-carrito" style="color:var(--success-color);">Bs. 0.00</span></h3>
+                </div>
             </div>
         </section>
 
         <section id="vista-ajustes" class="vista">
             <h2 style="margin-bottom: 20px;">⚙️ Ajustes</h2>
-            
-            <div class="card" style="border-left: 4px solid var(--success-color);">
-                <h3 style="margin-bottom: 10px;">📊 Exportar a Excel</h3>
-                <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Descarga tu historial en formato CSV para abrirlo en Excel o Google Sheets.</p>
-                <button onclick="descargarCSV()" class="btn-success">📝 Exportar Historial (CSV)</button>
-            </div>
-
-            <div class="card" style="border-left: 4px solid var(--primary-color);">
-                <h3 style="margin-bottom: 10px;">💾 Respaldo Completo</h3>
-                <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px;">Guarda o restaura toda la aplicación (JSON).</p>
-                <button onclick="descargarRespaldo()" class="btn-info" style="margin-bottom: 15px;">⬇️ Descargar Backup</button>
-                <label for="input-restaurar" class="btn-upload">⬆️ Subir Backup</label>
-                <input type="file" id="input-restaurar" accept=".json" style="display:none;" onchange="subirRespaldo(event)">
-            </div>
-
             <div class="card">
-                <h3 style="margin-bottom: 15px;">Mis Lugares</h3>
-                <div id="lista-lugares-ajustes"></div>
+                <h3 style="margin-bottom: 10px;">Cuenta Activa</h3>
+                <p id="info-usuario" style="margin-bottom: 15px; font-weight: bold; color: var(--primary-color);">Cargando...</p>
+                <button onclick="cerrarSesion()" style="background: var(--danger-color);">Cerrar Sesión</button>
             </div>
         </section>
     </main>
 
-    <div id="modal-historial" class="modal-overlay" onclick="cerrarModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 id="modal-titulo">Historial</h3>
-                <button onclick="document.getElementById('modal-historial').style.display='none'" style="width:auto; padding:5px 10px; background:var(--bg-color); color:var(--text-color);">❌</button>
-            </div>
-            <p id="modal-subtitulo" style="font-size:0.9em; opacity:0.8; margin-bottom:15px;"></p>
-            <div id="modal-lista"></div>
-        </div>
-    </div>
-
-    <nav>
-        <button class="nav-btn activa" onclick="cambiarVista('vista-ingreso', this)"><span class="nav-icon">➕</span><span>Ingreso</span></button>
-        <button class="nav-btn" onclick="cambiarVista('vista-matriz', this)"><span class="nav-icon">📈</span><span>Comparar</span></button>
-        <button class="nav-btn" onclick="cambiarVista('vista-dashboard', this)"><span class="nav-icon">📊</span><span>Resumen</span></button>
-        <button class="nav-btn" onclick="cambiarVista('vista-ajustes', this)"><span class="nav-icon">⚙️</span><span>Ajustes</span></button>
+    <nav id="menu-principal" style="display: none;">
+        <button class="nav-btn activa" onclick="cambiarVista('vista-ingreso', this)"><span>➕</span><span>Ingreso</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-matriz', this)"><span>📈</span><span>Comparar</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-carrito', this)"><span>🛒</span><span>Carrito</span></button>
+        <button class="nav-btn" onclick="cambiarVista('vista-ajustes', this)"><span>⚙️</span><span>Ajustes</span></button>
     </nav>
 
     <script>
-        // --- 1. PERSISTENCIA Y VARIABLES GLOBALES ---
+        // ==========================================
+        // 1. INICIALIZACIÓN DE SUPABASE (CREDENCIALES EXACTAS)
+        // ==========================================
+        const supabaseUrl = 'https://iwuglirgkvnobhatgedq.supabase.co';
+        const supabaseKey = 'sb_publishable_sNgWni9L5DWroTgEPKhKQw_cST-OXxR';
+        const options = {
+            auth: { persistSession: true, autoRefreshToken: true },
+            realtime: { eventsPerSecond: 10 }
+        };
+        const clienteSupabase = supabase.createClient(supabaseUrl, supabaseKey, options);
+
+        // ==========================================
+        // 2. ESTADO LOCAL (OFFLINE-FIRST)
+        // ==========================================
         let productos = JSON.parse(localStorage.getItem('productosAhorro')) || [];
         let catalogoProductos = JSON.parse(localStorage.getItem('catalogoAhorro')) || [];
         let lugares = JSON.parse(localStorage.getItem('lugaresAhorro')) || [{nombre: 'Supermercado Norte', activo: true}];
-        
-        let matrizOrdenActual = { lugar: null, ascendente: true };
-        const html5QrcodeScanner = new Html5Qrcode("reader");
+        let categorias = JSON.parse(localStorage.getItem('categoriasAhorro')) || ['Lácteos', 'Carnes', 'General'];
+        let carrito = JSON.parse(localStorage.getItem('carritoActual')) || []; // {producto, lugarSeleccionado, cantidad}
 
-        // --- 2. INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderizarLugares(); renderizarCatalogo();
-            renderizarDashboard(); renderizarMatriz(); renderizarAjustes();
-        });
+        let usuarioActual = null;
+        let isOnline = navigator.onLine;
 
-        function mostrarToast(mensaje, color = 'var(--success-color)') {
-            const toast = document.getElementById('mensaje-exito');
-            toast.textContent = mensaje; toast.style.background = color; toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        // ==========================================
+        // 3. LÓGICA DEL LED Y SINCRONIZACIÓN
+        // ==========================================
+        function actualizarLED() {
+            const led = document.getElementById('led-circulo');
+            const txt = document.getElementById('led-texto');
+            if (isOnline && usuarioActual) {
+                led.className = 'led verde'; txt.textContent = 'Sync OK';
+                sincronizarDatosPendientes();
+            } else {
+                led.className = 'led rojo'; txt.textContent = !isOnline ? 'Sin Internet' : 'Sin Sesión';
+            }
         }
 
-        function cambiarVista(idVista, btnElement) {
+        window.addEventListener('online', () => { isOnline = true; actualizarLED(); });
+        window.addEventListener('offline', () => { isOnline = false; actualizarLED(); });
+
+        async function sincronizarDatosPendientes() {
+            // Empuja los registros marcados como "synced: false"
+            const pendientes = productos.filter(p => !p.synced);
+            if(pendientes.length === 0) return;
+
+            for (let reg of pendientes) {
+                const { error } = await clienteSupabase.from('Bar_Historial').insert([{
+                    lugar: reg.lugar, nombre_producto: reg.nombre, codigo: reg.codigo, precio: reg.precio, fecha: reg.fecha
+                }]);
+                if (!error) {
+                    reg.synced = true; // Marcar como sincronizado localmente
+                }
+            }
+            localStorage.setItem('productosAhorro', JSON.stringify(productos));
+        }
+
+        // ==========================================
+        // 4. AUTENTICACIÓN
+        // ==========================================
+        clienteSupabase.auth.onAuthStateChange((event, session) => {
+            usuarioActual = session?.user || null;
+            if (usuarioActual) {
+                document.getElementById('vista-auth').classList.remove('activa');
+                document.getElementById('vista-ingreso').classList.add('activa');
+                document.getElementById('menu-principal').style.display = 'flex';
+                document.getElementById('info-usuario').textContent = usuarioActual.email;
+                renderizarListas(); renderizarMatriz(); actualizarVistaCarrito();
+            } else {
+                document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+                document.getElementById('vista-auth').classList.add('activa');
+                document.getElementById('menu-principal').style.display = 'none';
+            }
+            actualizarLED();
+        });
+
+        async function registrarse() {
+            const email = document.getElementById('auth-email').value; const password = document.getElementById('auth-pass').value;
+            const { error } = await clienteSupabase.auth.signUp({ email, password });
+            if(error) alert('Error: ' + error.message); else alert('Registro exitoso. Revisa tu correo o inicia sesión.');
+        }
+
+        async function iniciarSesion() {
+            const email = document.getElementById('auth-email').value; const password = document.getElementById('auth-pass').value;
+            const { error } = await clienteSupabase.auth.signInWithPassword({ email, password });
+            if(error) alert('Error: Credenciales incorrectas.');
+        }
+
+        async function cerrarSesion() { await clienteSupabase.auth.signOut(); }
+
+        // ==========================================
+        // 5. NAVEGACIÓN Y COMPONENTES
+        // ==========================================
+        function cambiarVista(id, btn) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('activo'));
-            document.getElementById(idVista).classList.add('activa');
-            btnElement.classList.add('activo');
-            if(idVista === 'vista-dashboard') renderizarDashboard();
-            if(idVista === 'vista-matriz') renderizarMatriz();
-            if(idVista === 'vista-ajustes') renderizarAjustes();
+            document.getElementById(id).classList.add('activa'); btn.classList.add('activo');
+            if(id === 'vista-matriz') renderizarMatriz();
+            if(id === 'vista-carrito') actualizarVistaCarrito();
         }
 
-        // --- 3. GESTIÓN DE LUGARES Y PRODUCTOS ---
-        const selectLugar = document.getElementById('select-lugar');
-        const inputNuevoLugar = document.getElementById('input-nuevo-lugar');
-        const selectProducto = document.getElementById('select-producto');
-        const inputNuevoProducto = document.getElementById('input-nuevo-producto');
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('mensaje-exito');
+            toast.textContent = mensaje; toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
 
-        function renderizarLugares() {
-            const valorActual = selectLugar.value;
-            selectLugar.innerHTML = '<option value="">Seleccione un lugar...</option>';
-            lugares.filter(l => l.activo).sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach(lugar => {
-                selectLugar.innerHTML += `<option value="${lugar.nombre}">${lugar.nombre}</option>`;
+        // ==========================================
+        // 6. RENDER DE FORMULARIOS
+        // ==========================================
+        function renderizarListas() {
+            const selLugar = document.getElementById('select-lugar');
+            selLugar.innerHTML = '<option value="">Seleccione lugar...</option>';
+            lugares.forEach(l => selLugar.innerHTML += `<option value="${l.nombre}">${l.nombre}</option>`);
+            selLugar.innerHTML += '<option value="nuevo_lugar">+ Nuevo lugar</option>';
+
+            const selProd = document.getElementById('select-producto');
+            const selCart = document.getElementById('select-agregar-carrito');
+            selProd.innerHTML = '<option value="">Seleccione producto...</option>';
+            selCart.innerHTML = '<option value="">+ Añadir a la lista...</option>';
+            catalogoProductos.forEach(p => {
+                selProd.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+                selCart.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
             });
-            selectLugar.innerHTML += '<option value="nuevo_lugar">+ Añadir nuevo lugar</option>';
-            if(lugares.find(l => l.nombre === valorActual && l.activo)) selectLugar.value = valorActual;
+            selProd.innerHTML += '<option value="nuevo_producto">+ Nuevo producto</option>';
+
+            const selCat = document.getElementById('select-categoria');
+            selCat.innerHTML = '<option value="">Seleccione categoría...</option>';
+            categorias.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
+            selCat.innerHTML += '<option value="nueva_categoria">+ Nueva categoría</option>';
         }
 
-        function renderizarCatalogo() {
-            const valorActual = selectProducto.value;
-            selectProducto.innerHTML = '<option value="">Seleccione un producto...</option>';
-            catalogoProductos.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach(prod => {
-                selectProducto.innerHTML += `<option value="${prod.nombre}">${prod.nombre}</option>`;
-            });
-            selectProducto.innerHTML += '<option value="nuevo_producto">+ Añadir nuevo producto</option>';
-            if(catalogoProductos.find(c => c.nombre === valorActual)) selectProducto.value = valorActual;
-        }
-
-        selectLugar.addEventListener('change', (e) => {
-            inputNuevoLugar.style.display = (e.target.value === 'nuevo_lugar') ? 'block' : 'none';
-            if(e.target.value === 'nuevo_lugar') inputNuevoLugar.focus();
-        });
-        selectProducto.addEventListener('change', (e) => {
-            inputNuevoProducto.style.display = (e.target.value === 'nuevo_producto') ? 'block' : 'none';
-            if(e.target.value === 'nuevo_producto') inputNuevoProducto.focus();
+        document.getElementById('select-lugar').addEventListener('change', e => document.getElementById('input-nuevo-lugar').style.display = e.target.value === 'nuevo_lugar' ? 'block' : 'none');
+        document.getElementById('select-producto').addEventListener('change', e => {
+            const esNuevo = e.target.value === 'nuevo_producto';
+            document.getElementById('input-nuevo-producto').style.display = esNuevo ? 'block' : 'none';
+            document.getElementById('grupo-categoria').style.display = esNuevo ? 'block' : 'none';
         });
 
-        // --- 4. ESCÁNER CON AUTOCOMPLETADO INTELIGENTE ---
-        document.getElementById('btn-escanear').addEventListener('click', () => {
-            const readerDiv = document.getElementById('reader');
-            if (readerDiv.style.display === 'block') { html5QrcodeScanner.stop().then(() => { readerDiv.style.display = 'none'; }); return; }
-            readerDiv.style.display = 'block';
-            html5QrcodeScanner.start( { facingMode: "environment" }, { fps: 10, qrbox: {width: 250, height: 250} },
-                (decodedText) => {
-                    document.getElementById('input-codigo').value = decodedText;
-                    const prodEncontrado = catalogoProductos.find(c => c.codigos.includes(decodedText));
-                    
-                    if (prodEncontrado) { 
-                        selectProducto.value = prodEncontrado.nombre; inputNuevoProducto.style.display = 'none'; 
-                        const historialProd = productos.filter(p => p.nombre === prodEncontrado.nombre).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-                        if (historialProd.length > 0) {
-                            if (lugares.find(l => l.nombre === historialProd[0].lugar && l.activo)) {
-                                selectLugar.value = historialProd[0].lugar; inputNuevoLugar.style.display = 'none';
-                            }
-                            document.getElementById('input-precio').value = historialProd[0].precio;
-                            mostrarToast('Datos recuperados automáticamente', 'var(--primary-color)');
-                        }
-                    } else if (!selectProducto.value || selectProducto.value === 'nuevo_producto') {
-                        selectProducto.value = 'nuevo_producto'; inputNuevoProducto.style.display = 'block';
-                        document.getElementById('input-precio').value = '';
-                    }
-                    html5QrcodeScanner.stop(); readerDiv.style.display = 'none';
-                }, (err) => {}
-            ).catch(err => { alert("Error con la cámara."); readerDiv.style.display = 'none'; });
-        });
-
-        // --- 5. GUARDADO ---
+        // ==========================================
+        // 7. GUARDADO CON GPS
+        // ==========================================
         document.getElementById('form-producto').addEventListener('submit', (e) => {
             e.preventDefault();
-            let lugarFinal = selectLugar.value; let productoFinal = selectProducto.value;
-            const precio = parseFloat(document.getElementById('input-precio').value);
-            const codigo = document.getElementById('input-codigo').value.trim();
-            let esValido = true;
+            let lugar = document.getElementById('select-lugar').value;
+            let producto = document.getElementById('select-producto').value;
+            let precio = parseFloat(document.getElementById('input-precio').value);
+            let codigo = document.getElementById('input-codigo').value || '';
 
-            document.getElementById('error-lugar').style.display = 'none';
-            if (lugarFinal === 'nuevo_lugar') {
-                lugarFinal = inputNuevoLugar.value.trim();
-                if (!lugarFinal) { document.getElementById('error-lugar').style.display = 'block'; esValido = false; } 
-                else if (!lugares.find(l => l.nombre.toLowerCase() === lugarFinal.toLowerCase())) {
-                    lugares.push({nombre: lugarFinal, activo: true});
-                    localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); renderizarLugares();
-                }
-            } else if (!lugarFinal) { document.getElementById('error-lugar').style.display = 'block'; esValido = false; }
-
-            document.getElementById('error-producto').style.display = 'none';
-            if (productoFinal === 'nuevo_producto') {
-                productoFinal = inputNuevoProducto.value.trim();
-                if (!productoFinal) { document.getElementById('error-producto').style.display = 'block'; esValido = false; }
-                else {
-                    catalogoProductos.push({ nombre: productoFinal, codigos: codigo ? [codigo] : [] });
-                    localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos)); renderizarCatalogo();
-                }
-            } else if (!productoFinal) { document.getElementById('error-producto').style.display = 'block'; esValido = false; } 
-            else {
-                let catItem = catalogoProductos.find(c => c.nombre === productoFinal);
-                if (catItem && codigo && !catItem.codigos.includes(codigo)) {
-                    catItem.codigos.push(codigo); localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos));
-                }
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    let idx = lugares.findIndex(l => l.nombre === lugar);
+                    if(idx !== -1) { lugares[idx].latitud = pos.coords.latitude; lugares[idx].longitud = pos.coords.longitude; localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); }
+                });
             }
 
-            if (isNaN(precio) || precio <= 0) { document.getElementById('error-precio').style.display = 'block'; esValido = false; }
-            if (!esValido) return;
+            if (lugar === 'nuevo_lugar') { lugar = document.getElementById('input-nuevo-lugar').value; lugares.push({nombre: lugar, activo: true}); }
+            if (producto === 'nuevo_producto') {
+                producto = document.getElementById('input-nuevo-producto').value;
+                catalogoProductos.push({ nombre: producto, codigos: [codigo] });
+            }
 
-            productos.push({ id: Date.now(), lugar: lugarFinal, codigo: codigo || '', nombre: productoFinal, precio: precio, fecha: new Date().toISOString() });
+            localStorage.setItem('lugaresAhorro', JSON.stringify(lugares));
+            localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos));
+
+            // Guardado Offline-First: synced=false
+            const nuevoRegistro = { id: Date.now(), lugar, nombre: producto, codigo, precio, fecha: new Date().toISOString(), synced: false };
+            productos.push(nuevoRegistro);
             localStorage.setItem('productosAhorro', JSON.stringify(productos));
-            mostrarToast('¡Precio registrado con éxito!');
             
-            document.getElementById('input-precio').value = ''; document.getElementById('input-codigo').value = '';
-            inputNuevoLugar.style.display = 'none'; inputNuevoProducto.style.display = 'none';
-            selectLugar.value = lugarFinal; selectProducto.value = productoFinal;
+            e.target.reset(); renderizarListas(); mostrarToast('¡Guardado localmente!');
+            actualizarLED(); // Intentar sincronizar si hay red
         });
 
-        // --- 6. DASHBOARD CON BUSCADOR Y FEEDBACK DE AHORRO ---
-        function renderizarDashboard() {
-            document.getElementById('kpi-total').textContent = productos.length;
-            document.getElementById('kpi-unicos').textContent = catalogoProductos.length;
-            const tbody = document.getElementById('tabla-body-dash');
-            tbody.innerHTML = '';
-            
-            const termino = document.getElementById('input-busqueda-dash').value.toLowerCase();
-            let listaFiltrada = [...productos].reverse();
-            if (termino) listaFiltrada = listaFiltrada.filter(p => p.nombre.toLowerCase().includes(termino) || p.lugar.toLowerCase().includes(termino));
-
-            if (listaFiltrada.length === 0) { tbody.innerHTML = '<tr><td style="padding:15px; text-align:center;">Sin resultados</td></tr>'; return; }
-
-            listaFiltrada.slice(0, 15).forEach(p => {
-                // Calcular si hubo ahorro (Comparar con el precio más alto histórico de este producto)
-                const historialProd = productos.filter(x => x.nombre === p.nombre);
-                const precioMaximo = Math.max(...historialProd.map(x => x.precio));
-                let badgeAhorro = '';
-                
-                if (precioMaximo > p.precio) {
-                    const ahorro = precioMaximo - p.precio;
-                    badgeAhorro = `<div class="badge-ahorro">¡Ahorraste Bs. ${ahorro.toFixed(2)}!</div>`;
-                }
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="padding:15px; border-bottom:1px solid var(--border-color);">
-                        <strong>${p.nombre}</strong><br>
-                        <small style="color: gray;">📍 ${p.lugar}</small><br>
-                        ${badgeAhorro}
-                    </td>
-                    <td style="padding:15px; border-bottom:1px solid var(--border-color); text-align:right; font-weight:bold; color:var(--text-color);">
-                        Bs. ${p.precio.toFixed(2)}
-                    </td>`;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // --- 7. MATRIZ INTELIGENTE (Buscador y Ordenamiento) ---
-        function ordenarMatriz(lugar) {
-            if (matrizOrdenActual.lugar === lugar) {
-                matrizOrdenActual.ascendente = !matrizOrdenActual.ascendente;
-            } else {
-                matrizOrdenActual.lugar = lugar;
-                matrizOrdenActual.ascendente = true;
-            }
-            renderizarMatriz();
-        }
-
+        // ==========================================
+        // 8. MATRIZ (FONDO VERDE)
+        // ==========================================
         function renderizarMatriz() {
-            const tabla = document.getElementById('tabla-matriz');
-            tabla.innerHTML = '';
-
-            const termino = document.getElementById('input-busqueda-matriz').value.toLowerCase();
-            const lugaresConDatos = [...new Set(productos.map(p => p.lugar))].sort();
-            let productosUnicos = [...new Set(productos.map(p => p.nombre))];
-
-            if (termino) productosUnicos = productosUnicos.filter(n => n.toLowerCase().includes(termino));
-            if (lugaresConDatos.length === 0 || productosUnicos.length === 0) {
-                tabla.innerHTML = '<tr><td style="padding:20px;">No hay datos para mostrar.</td></tr>'; return;
-            }
-
-            // Aplicar Ordenamiento
-            if (matrizOrdenActual.lugar) {
-                productosUnicos.sort((a, b) => {
-                    const histA = productos.filter(p => p.nombre === a && p.lugar === matrizOrdenActual.lugar).sort((x,y) => new Date(y.fecha) - new Date(x.fecha));
-                    const histB = productos.filter(p => p.nombre === b && p.lugar === matrizOrdenActual.lugar).sort((x,y) => new Date(y.fecha) - new Date(x.fecha));
-                    const precioA = histA.length > 0 ? histA[0].precio : (matrizOrdenActual.ascendente ? Infinity : -Infinity);
-                    const precioB = histB.length > 0 ? histB[0].precio : (matrizOrdenActual.ascendente ? Infinity : -Infinity);
-                    return matrizOrdenActual.ascendente ? precioA - precioB : precioB - precioA;
-                });
-            } else {
-                productosUnicos.sort(); // Orden alfabético por defecto
-            }
+            const tabla = document.getElementById('tabla-matriz'); tabla.innerHTML = '';
+            const filtro = document.getElementById('input-busqueda-matriz').value.toLowerCase();
+            const tiendas = [...new Set(productos.map(p => p.lugar))].sort();
+            let prods = [...new Set(productos.map(p => p.nombre))].filter(n => n.toLowerCase().includes(filtro));
+            
+            if (tiendas.length === 0 || prods.length === 0) return;
 
             let thead = '<thead><tr><th>Producto</th>';
-            lugaresConDatos.forEach(l => { 
-                const icono = (matrizOrdenActual.lugar === l) ? (matrizOrdenActual.ascendente ? ' 🔼' : ' 🔽') : '';
-                thead += `<th onclick="ordenarMatriz('${l}')">${l}${icono}</th>`; 
-            });
-            thead += '</tr></thead>';
-            tabla.innerHTML = thead;
+            tiendas.forEach(t => thead += `<th>${t}</th>`);
+            tabla.innerHTML = thead + '</tr></thead>';
 
             const tbody = document.createElement('tbody');
-            productosUnicos.forEach(prod => {
+            prods.forEach(prod => {
                 const tr = document.createElement('tr');
-                let filaHTML = `<td>${prod}</td>`;
+                let htmlFila = `<td>${prod}</td>`;
                 
-                lugaresConDatos.forEach(lugar => {
-                    const historial = productos.filter(p => p.nombre === prod && p.lugar === lugar).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-                    if (historial.length === 0) { filaHTML += `<td style="color:#a0aec0;">-</td>`; } 
+                let ultimosPrecios = {};
+                tiendas.forEach(t => {
+                    const hist = productos.filter(p => p.nombre === prod && p.lugar === t).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                    if(hist.length > 0) ultimosPrecios[t] = hist[0].precio;
+                });
+
+                const vals = Object.values(ultimosPrecios);
+                const min = vals.length > 0 ? Math.min(...vals) : null;
+
+                tiendas.forEach(t => {
+                    if(!ultimosPrecios[t]) htmlFila += `<td>-</td>`;
                     else {
-                        const precioActual = historial[0].precio;
-                        let tendencia = ''; let claseTendencia = '';
-                        if (historial.length > 1) {
-                            if (precioActual > historial[1].precio) { tendencia = ' 🔴'; claseTendencia = 'tendencia-sube'; }
-                            else if (precioActual < historial[1].precio) { tendencia = ' 🟢'; claseTendencia = 'tendencia-baja'; }
-                        }
-                        filaHTML += `<td class="celda-precio" onclick="abrirModal('${prod}', '${lugar}')"><span class="${claseTendencia}">Bs. ${precioActual.toFixed(2)}${tendencia}</span></td>`;
+                        const esMejor = (ultimosPrecios[t] === min) ? 'mejor-precio' : '';
+                        htmlFila += `<td class="${esMejor}">Bs. ${ultimosPrecios[t].toFixed(2)}</td>`;
                     }
                 });
-                tr.innerHTML = filaHTML; tbody.appendChild(tr);
+                tr.innerHTML = htmlFila; tbody.appendChild(tr);
             });
             tabla.appendChild(tbody);
         }
 
-        // --- 8. HISTORIAL (MODAL) ---
-        function abrirModal(producto, lugar) {
-            const modal = document.getElementById('modal-historial');
-            document.getElementById('modal-titulo').textContent = producto; document.getElementById('modal-subtitulo').textContent = `📍 ${lugar}`;
-            const listaDiv = document.getElementById('modal-lista'); listaDiv.innerHTML = '';
-            const historial = productos.filter(p => p.nombre === producto && p.lugar === lugar).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+        // ==========================================
+        // 9. CARRITO (CANTIDADES DECIMALES Y MÚLTIPLOS)
+        // ==========================================
+        function agregarAlCarrito() {
+            const val = document.getElementById('select-agregar-carrito').value;
+            if(val && !carrito.find(c => c.producto === val)) {
+                carrito.push({ producto: val, lugarSeleccionado: 'Auto', cantidad: 1 });
+                guardarYRenderizarCarrito();
+            }
+            document.getElementById('select-agregar-carrito').value = '';
+        }
 
-            historial.forEach((reg, index) => {
-                const fecha = new Date(reg.fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
-                let variacion = '';
-                if (index < historial.length - 1) {
-                    if (reg.precio > historial[index + 1].precio) variacion = `<span style="color:var(--danger-color); font-size:0.8em;">(Subió)</span>`;
-                    if (reg.precio < historial[index + 1].precio) variacion = `<span style="color:var(--success-color); font-size:0.8em;">(Bajó)</span>`;
-                }
-                listaDiv.innerHTML += `<div class="historial-item"><div><div style="font-size:0.85em; color:gray;">${fecha}</div></div><div style="font-weight:bold;">Bs. ${reg.precio.toFixed(2)} ${variacion}</div></div>`;
+        function cambiarCantidad(index, delta) {
+            let cant = parseFloat(carrito[index].cantidad) || 0;
+            cant += delta;
+            if (cant < 0.1) cant = 0.1; // Mínimo
+            carrito[index].cantidad = parseFloat(cant.toFixed(2));
+            guardarYRenderizarCarrito();
+        }
+
+        function setCantidad(index, val) {
+            let cant = parseFloat(val);
+            if (isNaN(cant) || cant <= 0) cant = 1;
+            carrito[index].cantidad = parseFloat(cant.toFixed(2));
+            guardarYRenderizarCarrito();
+        }
+
+        function cambiarLugarCarrito(index, lugar) {
+            carrito[index].lugarSeleccionado = lugar;
+            guardarYRenderizarCarrito();
+        }
+
+        function quitarDelCarrito(index) {
+            carrito.splice(index, 1); guardarYRenderizarCarrito();
+        }
+
+        function guardarYRenderizarCarrito() {
+            localStorage.setItem('carritoActual', JSON.stringify(carrito));
+            actualizarVistaCarrito();
+        }
+
+        function actualizarVistaCarrito() {
+            const div = document.getElementById('lista-carrito-items'); div.innerHTML = '';
+            let total = 0;
+            const tiendas = [...new Set(productos.map(p => p.lugar))];
+
+            carrito.forEach((item, index) => {
+                let preciosDisponibles = {};
+                tiendas.forEach(t => {
+                    const hist = productos.filter(p => p.nombre === item.producto && p.lugar === t).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                    if(hist.length > 0) preciosDisponibles[t] = hist[0].precio;
+                });
+
+                let lugarOptimo = Object.keys(preciosDisponibles).reduce((a, b) => preciosDisponibles[a] < preciosDisponibles[b] ? a : b, null);
+                let lugarAplicado = item.lugarSeleccionado === 'Auto' ? lugarOptimo : item.lugarSeleccionado;
+                let precioUnitario = preciosDisponibles[lugarAplicado] || 0;
+                let subtotal = precioUnitario * item.cantidad;
+                total += subtotal;
+
+                let opcionesLugar = `<option value="Auto">✨ Más barato (${lugarOptimo || 'N/A'})</option>`;
+                Object.keys(preciosDisponibles).forEach(t => opcionesLugar += `<option value="${t}" ${item.lugarSeleccionado === t ? 'selected' : ''}>${t} (Bs. ${preciosDisponibles[t].toFixed(2)}/u)</option>`);
+
+                div.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-row">
+                            <strong style="font-size: 1.1em;">${item.producto}</strong>
+                            <button style="background:var(--danger-color); padding: 5px 10px; border-radius: 6px;" onclick="quitarDelCarrito(${index})">X</button>
+                        </div>
+                        <div class="cart-row">
+                            <div class="cart-controls">
+                                <button onclick="cambiarCantidad(${index}, -1)">-</button>
+                                <input type="number" step="0.1" value="${item.cantidad}" onchange="setCantidad(${index}, this.value)">
+                                <button onclick="cambiarCantidad(${index}, 1)">+</button>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color:var(--success-color); font-weight:bold; font-size: 1.2em;">Bs. ${subtotal.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <select class="cart-select" onchange="cambiarLugarCarrito(${index}, this.value)">${opcionesLugar}</select>
+                    </div>`;
             });
-            modal.style.display = 'flex';
-        }
-        function cerrarModal(e) { if(e.target.id === 'modal-historial') document.getElementById('modal-historial').style.display = 'none'; }
-
-        // --- 9. AJUSTES (CSV, JSON, LUGARES) ---
-        function renderizarAjustes() {
-            const lista = document.getElementById('lista-lugares-ajustes'); lista.innerHTML = '';
-            lugares.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((lugar, i) => {
-                lista.innerHTML += `<div class="lugar-item"><span style="${!lugar.activo ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${lugar.nombre}</span><button class="${lugar.activo ? 'btn-danger' : ''}" style="width:auto; padding:8px 15px; background:${lugar.activo ? '' : 'var(--success-color)'}" onclick="toggleLugar(${i})">${lugar.activo ? 'Ocultar' : 'Restaurar'}</button></div>`;
-            });
-        }
-        function toggleLugar(index) { lugares[index].activo = !lugares[index].activo; localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); renderizarAjustes(); renderizarLugares(); }
-
-        // Exportar a CSV
-        function descargarCSV() {
-            if (productos.length === 0) { alert("No hay datos para exportar."); return; }
-            let csv = "Fecha,Lugar,Producto,Codigo_Barras,Precio_Bs\n";
-            productos.forEach(p => {
-                // Prevenir errores con comas en nombres/lugares
-                const fechaFormat = new Date(p.fecha).toLocaleString('es-ES');
-                csv += `"${fechaFormat}","${p.lugar.replace(/"/g, '""')}","${p.nombre.replace(/"/g, '""')}","${p.codigo}",${p.precio}\n`;
-            });
-            const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob); const a = document.createElement("a");
-            a.href = url; a.download = `historial_ahorro_${new Date().getTime()}.csv`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-            mostrarToast("¡CSV exportado con éxito!");
-        }
-
-        // Respaldos JSON
-        function descargarRespaldo() {
-            const data = { version: "1.5", productos, catalogoProductos, lugares };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob); const a = document.createElement("a");
-            a.href = url; a.download = `backup_app_${new Date().getTime()}.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-            mostrarToast("¡Respaldo JSON descargado!");
-        }
-        function subirRespaldo(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (!data.productos || !data.catalogoProductos || !data.lugares) throw new Error("Formato inválido.");
-                    if (confirm("⚠️ ADVERTENCIA: Esto sobrescribirá todos tus datos actuales. ¿Continuar?")) {
-                        localStorage.setItem('productosAhorro', JSON.stringify(data.productos));
-                        localStorage.setItem('catalogoAhorro', JSON.stringify(data.catalogoProductos));
-                        localStorage.setItem('lugaresAhorro', JSON.stringify(data.lugares));
-                        alert("✅ Datos restaurados. La app se recargará."); location.reload();
-                    }
-                } catch (error) { alert("❌ Error al leer el archivo. Asegúrate que sea un JSON válido."); }
-                event.target.value = '';
-            };
-            reader.readAsText(file);
+            document.getElementById('total-carrito').textContent = `Bs. ${total.toFixed(2)}`;
         }
     </script>
 </body>
