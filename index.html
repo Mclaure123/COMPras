@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ahorro Inteligente V3.0 PRO</title>
+    <title>Ahorro Inteligente V3.2 PRO</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* ==========================================
-           VARIABLES Y TEMA OSCURO/CLARO
+           VARIABLES Y TEMA
            ========================================== */
         :root {
             --bg-color: #f0f4f8; --text-color: #2d3748; --card-bg: #ffffff;
@@ -65,13 +65,44 @@
         .tabla th { background-color: var(--nav-bg); }
         .mejor-precio { background-color: rgba(72, 187, 120, 0.25) !important; border: 2px solid var(--success-color); font-weight: bold; }
 
-        /* CARRITO (CANTIDAD Y DECIMALES) */
-        .cart-item { border-bottom: 1px solid var(--border-color); padding: 15px 0; }
-        .cart-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .cart-controls { display: flex; align-items: center; gap: 5px; background: var(--bg-color); border-radius: 8px; padding: 2px; }
-        .cart-controls button { width: 35px; height: 35px; padding: 0; border-radius: 6px; font-size: 1.2em; background: var(--primary-color); }
-        .cart-controls input { width: 60px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
-        .cart-select { padding: 8px; font-size: 0.9em; width: 100%; border-radius: 8px; }
+        /* ==========================================
+           CARRITO REPARADO (Scroll Horizontal Real)
+           ========================================== */
+        .cart-wrapper { overflow: hidden; position: relative; border-radius: var(--radius); background: var(--card-bg); box-shadow: var(--shadow-md); display: flex; flex-direction: column; max-height: 65vh; width: 100%; }
+        .cart-list { overflow-y: auto; overflow-x: hidden; flex: 1; width: 100%; }
+        
+        .cart-item { 
+            display: flex; align-items: center; width: 100%; overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; scrollbar-width: none; 
+            padding: 15px 0; border-bottom: 1px solid var(--border-color); gap: 15px; 
+        }
+        .cart-item::-webkit-scrollbar { display: none; }
+        
+        .cart-item-title { 
+            position: sticky; left: 0; background: var(--card-bg); z-index: 10; 
+            min-width: 130px; max-width: 140px; padding-left: 15px; padding-right: 10px; 
+            font-weight: bold; display: flex; align-items: center; 
+            box-shadow: 5px 0 5px -5px rgba(0,0,0,0.15); text-transform: uppercase; 
+            font-size: 0.85em; flex-shrink: 0; 
+        }
+        
+        .cart-controls { display: flex; align-items: center; gap: 5px; background: var(--bg-color); border-radius: 8px; padding: 4px; flex-shrink: 0; }
+        .cart-controls button { width: 35px; height: 35px; padding: 0; border-radius: 6px; font-size: 1.2em; background: var(--primary-color); display: flex; justify-content: center; align-items: center; }
+        .cart-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .cart-controls input { width: 55px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
+        
+        .cart-price { flex-shrink: 0; min-width: 85px; text-align: right; color:var(--success-color); font-weight:bold; font-size: 1.1em; }
+        
+        .cart-select { flex-shrink: 0; min-width: 150px; padding: 8px; font-size: 0.85em; width: auto; border-radius: 8px; }
+        
+        .btn-delete-cart { 
+            flex-shrink: 0; background: var(--danger-color); border: none; 
+            width: 40px; height: 40px; border-radius: 8px; display: flex; 
+            justify-content: center; align-items: center; color: white; 
+            margin-right: 15px; font-size: 1.2em; cursor: pointer;
+        }
+
+        .cart-footer { position: sticky; bottom: 0; background: var(--card-bg); padding: 15px; text-align: right; border-top: 1px solid var(--border-color); z-index: 20; box-shadow: 0 -5px 10px rgba(0,0,0,0.05); }
 
         /* NAVEGACIÓN */
         nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 1000; }
@@ -92,16 +123,9 @@
 
         <section id="vista-auth" class="vista activa">
             <h2 style="margin-bottom: 15px; text-align: center;">Acceso Seguro</h2>
-            <p style="text-align: center; opacity: 0.8; margin-bottom: 20px;">Conéctate para sincronizar tus precios en Supabase.</p>
             <div class="card">
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="auth-email" placeholder="tu@correo.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="auth-pass" placeholder="******">
-                </div>
+                <div class="form-group"><label>Correo Electrónico</label><input type="email" id="auth-email" placeholder="tu@correo.com"></div>
+                <div class="form-group"><label>Contraseña</label><input type="password" id="auth-pass" placeholder="******"></div>
                 <button onclick="iniciarSesion()" style="margin-bottom: 10px;">🔐 Iniciar Sesión</button>
                 <button onclick="registrarse()" style="background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color);">Crear Cuenta Nueva</button>
             </div>
@@ -162,9 +186,10 @@
                     <option value="">+ Añadir a la lista...</option>
                 </select>
             </div>
-            <div class="card" style="padding: 0;">
-                <div id="lista-carrito-items" style="padding: 15px;"></div>
-                <div style="padding: 15px; background: rgba(0,0,0,0.05); text-align: right; border-top: 1px solid var(--border-color);">
+            
+            <div class="cart-wrapper">
+                <div id="lista-carrito-items" class="cart-list"></div>
+                <div class="cart-footer">
                     <h3>Total Estimado: <span id="total-carrito" style="color:var(--success-color);">Bs. 0.00</span></h3>
                 </div>
             </div>
@@ -188,32 +213,20 @@
     </nav>
 
     <script>
-        // ==========================================
-        // 1. INICIALIZACIÓN DE SUPABASE (CREDENCIALES EXACTAS)
-        // ==========================================
         const supabaseUrl = 'https://iwuglirgkvnobhatgedq.supabase.co';
         const supabaseKey = 'sb_publishable_sNgWni9L5DWroTgEPKhKQw_cST-OXxR';
-        const options = {
-            auth: { persistSession: true, autoRefreshToken: true },
-            realtime: { eventsPerSecond: 10 }
-        };
+        const options = { auth: { persistSession: true, autoRefreshToken: true }, realtime: { eventsPerSecond: 10 } };
         const clienteSupabase = supabase.createClient(supabaseUrl, supabaseKey, options);
 
-        // ==========================================
-        // 2. ESTADO LOCAL (OFFLINE-FIRST)
-        // ==========================================
         let productos = JSON.parse(localStorage.getItem('productosAhorro')) || [];
         let catalogoProductos = JSON.parse(localStorage.getItem('catalogoAhorro')) || [];
         let lugares = JSON.parse(localStorage.getItem('lugaresAhorro')) || [{nombre: 'Supermercado Norte', activo: true}];
         let categorias = JSON.parse(localStorage.getItem('categoriasAhorro')) || ['Lácteos', 'Carnes', 'General'];
-        let carrito = JSON.parse(localStorage.getItem('carritoActual')) || []; // {producto, lugarSeleccionado, cantidad}
+        let carrito = JSON.parse(localStorage.getItem('carritoActual')) || []; 
 
         let usuarioActual = null;
         let isOnline = navigator.onLine;
 
-        // ==========================================
-        // 3. LÓGICA DEL LED Y SINCRONIZACIÓN
-        // ==========================================
         function actualizarLED() {
             const led = document.getElementById('led-circulo');
             const txt = document.getElementById('led-texto');
@@ -229,24 +242,15 @@
         window.addEventListener('offline', () => { isOnline = false; actualizarLED(); });
 
         async function sincronizarDatosPendientes() {
-            // Empuja los registros marcados como "synced: false"
             const pendientes = productos.filter(p => !p.synced);
             if(pendientes.length === 0) return;
-
             for (let reg of pendientes) {
-                const { error } = await clienteSupabase.from('Bar_Historial').insert([{
-                    lugar: reg.lugar, nombre_producto: reg.nombre, codigo: reg.codigo, precio: reg.precio, fecha: reg.fecha
-                }]);
-                if (!error) {
-                    reg.synced = true; // Marcar como sincronizado localmente
-                }
+                const { error } = await clienteSupabase.from('Bar_Historial').insert([{ lugar: reg.lugar, nombre_producto: reg.nombre, codigo: reg.codigo, precio: reg.precio, fecha: reg.fecha }]);
+                if (!error) reg.synced = true;
             }
             localStorage.setItem('productosAhorro', JSON.stringify(productos));
         }
 
-        // ==========================================
-        // 4. AUTENTICACIÓN
-        // ==========================================
         clienteSupabase.auth.onAuthStateChange((event, session) => {
             usuarioActual = session?.user || null;
             if (usuarioActual) {
@@ -266,7 +270,7 @@
         async function registrarse() {
             const email = document.getElementById('auth-email').value; const password = document.getElementById('auth-pass').value;
             const { error } = await clienteSupabase.auth.signUp({ email, password });
-            if(error) alert('Error: ' + error.message); else alert('Registro exitoso. Revisa tu correo o inicia sesión.');
+            if(error) alert('Error: ' + error.message); else alert('Registro exitoso.');
         }
 
         async function iniciarSesion() {
@@ -277,9 +281,6 @@
 
         async function cerrarSesion() { await clienteSupabase.auth.signOut(); }
 
-        // ==========================================
-        // 5. NAVEGACIÓN Y COMPONENTES
-        // ==========================================
         function cambiarVista(id, btn) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('activo'));
@@ -294,9 +295,6 @@
             setTimeout(() => toast.style.display = 'none', 3000);
         }
 
-        // ==========================================
-        // 6. RENDER DE FORMULARIOS
-        // ==========================================
         function renderizarListas() {
             const selLugar = document.getElementById('select-lugar');
             selLugar.innerHTML = '<option value="">Seleccione lugar...</option>';
@@ -326,9 +324,17 @@
             document.getElementById('grupo-categoria').style.display = esNuevo ? 'block' : 'none';
         });
 
-        // ==========================================
-        // 7. GUARDADO CON GPS
-        // ==========================================
+        const html5QrcodeScanner = new Html5Qrcode("reader");
+        document.getElementById('btn-escanear').addEventListener('click', () => {
+            const readerDiv = document.getElementById('reader');
+            if (readerDiv.style.display === 'block') { html5QrcodeScanner.stop(); readerDiv.style.display = 'none'; return; }
+            readerDiv.style.display = 'block';
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: {width: 250, height: 250} },
+                (decodedText) => { document.getElementById('input-codigo').value = decodedText; html5QrcodeScanner.stop(); readerDiv.style.display = 'none'; },
+                (err) => {}
+            ).catch(err => { alert("Error con la cámara."); readerDiv.style.display = 'none'; });
+        });
+
         document.getElementById('form-producto').addEventListener('submit', (e) => {
             e.preventDefault();
             let lugar = document.getElementById('select-lugar').value;
@@ -336,34 +342,20 @@
             let precio = parseFloat(document.getElementById('input-precio').value);
             let codigo = document.getElementById('input-codigo').value || '';
 
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    let idx = lugares.findIndex(l => l.nombre === lugar);
-                    if(idx !== -1) { lugares[idx].latitud = pos.coords.latitude; lugares[idx].longitud = pos.coords.longitude; localStorage.setItem('lugaresAhorro', JSON.stringify(lugares)); }
-                });
-            }
-
             if (lugar === 'nuevo_lugar') { lugar = document.getElementById('input-nuevo-lugar').value; lugares.push({nombre: lugar, activo: true}); }
-            if (producto === 'nuevo_producto') {
-                producto = document.getElementById('input-nuevo-producto').value;
-                catalogoProductos.push({ nombre: producto, codigos: [codigo] });
-            }
+            if (producto === 'nuevo_producto') { producto = document.getElementById('input-nuevo-producto').value; catalogoProductos.push({ nombre: producto, codigos: [codigo] }); }
 
             localStorage.setItem('lugaresAhorro', JSON.stringify(lugares));
             localStorage.setItem('catalogoAhorro', JSON.stringify(catalogoProductos));
 
-            // Guardado Offline-First: synced=false
             const nuevoRegistro = { id: Date.now(), lugar, nombre: producto, codigo, precio, fecha: new Date().toISOString(), synced: false };
             productos.push(nuevoRegistro);
             localStorage.setItem('productosAhorro', JSON.stringify(productos));
             
             e.target.reset(); renderizarListas(); mostrarToast('¡Guardado localmente!');
-            actualizarLED(); // Intentar sincronizar si hay red
+            actualizarLED();
         });
 
-        // ==========================================
-        // 8. MATRIZ (FONDO VERDE)
-        // ==========================================
         function renderizarMatriz() {
             const tabla = document.getElementById('tabla-matriz'); tabla.innerHTML = '';
             const filtro = document.getElementById('input-busqueda-matriz').value.toLowerCase();
@@ -403,7 +395,7 @@
         }
 
         // ==========================================
-        // 9. CARRITO (CANTIDADES DECIMALES Y MÚLTIPLOS)
+        // LÓGICA DEL CARRITO (LISTA HORIZONTAL)
         // ==========================================
         function agregarAlCarrito() {
             const val = document.getElementById('select-agregar-carrito').value;
@@ -417,14 +409,14 @@
         function cambiarCantidad(index, delta) {
             let cant = parseFloat(carrito[index].cantidad) || 0;
             cant += delta;
-            if (cant < 0.1) cant = 0.1; // Mínimo
+            if (cant < 0.1) cant = 0.1;
             carrito[index].cantidad = parseFloat(cant.toFixed(2));
             guardarYRenderizarCarrito();
         }
 
         function setCantidad(index, val) {
             let cant = parseFloat(val);
-            if (isNaN(cant) || cant <= 0) cant = 1;
+            if (isNaN(cant) || cant <= 0) cant = 0.1;
             carrito[index].cantidad = parseFloat(cant.toFixed(2));
             guardarYRenderizarCarrito();
         }
@@ -444,7 +436,8 @@
         }
 
         function actualizarVistaCarrito() {
-            const div = document.getElementById('lista-carrito-items'); div.innerHTML = '';
+            const div = document.getElementById('lista-carrito-items'); 
+            div.innerHTML = '';
             let total = 0;
             const tiendas = [...new Set(productos.map(p => p.lugar))];
 
@@ -464,23 +457,25 @@
                 let opcionesLugar = `<option value="Auto">✨ Más barato (${lugarOptimo || 'N/A'})</option>`;
                 Object.keys(preciosDisponibles).forEach(t => opcionesLugar += `<option value="${t}" ${item.lugarSeleccionado === t ? 'selected' : ''}>${t} (Bs. ${preciosDisponibles[t].toFixed(2)}/u)</option>`);
 
+                let btnMinusDisabled = item.cantidad <= 0.1 ? 'disabled' : '';
+
                 div.innerHTML += `
                     <div class="cart-item">
-                        <div class="cart-row">
-                            <strong style="font-size: 1.1em;">${item.producto}</strong>
-                            <button style="background:var(--danger-color); padding: 5px 10px; border-radius: 6px;" onclick="quitarDelCarrito(${index})">X</button>
+                        <div class="cart-item-title">${item.producto}</div>
+                        
+                        <div class="cart-controls">
+                            <button onclick="cambiarCantidad(${index}, -1)" ${btnMinusDisabled}>-</button>
+                            <input type="number" step="0.1" value="${item.cantidad}" onchange="setCantidad(${index}, this.value)">
+                            <button onclick="cambiarCantidad(${index}, 1)">+</button>
                         </div>
-                        <div class="cart-row">
-                            <div class="cart-controls">
-                                <button onclick="cambiarCantidad(${index}, -1)">-</button>
-                                <input type="number" step="0.1" value="${item.cantidad}" onchange="setCantidad(${index}, this.value)">
-                                <button onclick="cambiarCantidad(${index}, 1)">+</button>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="color:var(--success-color); font-weight:bold; font-size: 1.2em;">Bs. ${subtotal.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        <select class="cart-select" onchange="cambiarLugarCarrito(${index}, this.value)">${opcionesLugar}</select>
+
+                        <div class="cart-price">Bs. ${subtotal.toFixed(2)}</div>
+
+                        <select class="cart-select" onchange="cambiarLugarCarrito(${index}, this.value)">
+                            ${opcionesLugar}
+                        </select>
+
+                        <button class="btn-delete-cart" onclick="quitarDelCarrito(${index})">🗑️</button>
                     </div>`;
             });
             document.getElementById('total-carrito').textContent = `Bs. ${total.toFixed(2)}`;
